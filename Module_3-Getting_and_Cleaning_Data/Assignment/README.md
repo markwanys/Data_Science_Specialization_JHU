@@ -2,12 +2,12 @@
 title: "README"
 author: "Mark Wan"
 date: "10/2/2020"
-output: html_document
+output: rmarkdown::github_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-output: rmarkdown::github_document
+
 ```
 
 ## **Overview**
