@@ -391,6 +391,7 @@ summary {
 </div>
 
 
+<p><code>{r setup, include=FALSE} knitr::opts_chunk$set(echo = TRUE) output: rmarkdown::github_document</code></p>
 <div id="overview" class="section level2">
 <h2><strong>Overview</strong></h2>
 <p>This readme file details the steps executed by the author to product the ‘tidydataset’.</p>
@@ -420,13 +421,9 @@ summary {
 </ul>
 <p>Below are the required packages and R version</p>
 <ul>
-<li>dplyr with version:</li>
+<li><p>dplyr with version: <code>{r dplyr_version, echo=FALSE}  packageVersion(&quot;dplyr&quot;)</code></p></li>
+<li><p>R version: <code>{r r_version, echo=FALSE}  package_version(R.version)</code></p></li>
 </ul>
-<pre><code>## [1] &#39;1.0.2&#39;</code></pre>
-<ul>
-<li>R version:</li>
-</ul>
-<pre><code>## [1] &#39;4.0.2&#39;</code></pre>
 <p>Once all required files have been extracted, and all packages loaded, execute run_analysis in the “.” directory. Script will produce “tidydataset” text file in “.” directory.</p>
 </div>
 <div id="transformation-steps" class="section level2">
