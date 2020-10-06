@@ -1,0 +1,783 @@
+| Attempting to load lesson dependencies...
+
+| Package ‘jpeg’ loaded correctly!
+
+| Package ‘RColorBrewer’ loaded correctly!
+
+| Package ‘datasets’ loaded correctly!
+
+
+
+| Of course, color choice is secondary to your data and how you analyze it, but effectively using colors can enhance your plots and
+| presentations, emphasizing the important points you're trying to convey.
+
+...
+
+  |=====                                                                                                                         |   4%
+| The motivation for this lesson is that the default color schemes for most plots in R are not optimal. Fortunately there have been
+| recent developments to improve the handling and specification of colors in plots and graphs. We'll cover some functions in R as well
+| as in external packages that are very handy. If you know how to use some of these then you'll have more options when you create your
+| displays.
+
+...
+
+  |=======                                                                                                                       |   6%
+| We'll begin with a motivating example - a typical R plot using 3 default colors.
+
+...
+
+  |=========                                                                                                                     |   7%
+| According to the plot, what is color 2?
+
+1: Red
+2: Empty black circles
+3: Green
+4: Blue
+
+Selection: 1
+
+| You are amazing!
+
+  |===========                                                                                                                   |   9%
+| So these are the first 3 default values. If you were plotting and just specified col=c(1:3) as one of your arguments, these are
+| colors you'd get. Maybe you like them, but they might not be the best choice for your application.
+
+...
+
+  |=============                                                                                                                 |  10%
+| To show you some options, here's a display of two color palettes that come with the grDevices package available to you. The left
+| shows you some colors from the function heat.colors. Here low values are represented in red and as the values increase the colors
+| move through yellow towards white. This is consistent with the physical properties of fire. The right display is from the function
+| topo.colors which uses topographical colors ranging from blue (low values) towards brown (higher values).
+
+...
+
+  |===============                                                                                                               |  12%
+| So we'll first discuss some functions that the grDevices package offers. The function colors() lists the names of 657 predefined
+| colors you can use in any plotting function.  These names are returned as strings. Run the R command sample with colors() as its
+| first argument and 10 as its second to give you an idea of the choices you have.
+
+> colors()
+  [1] "white"                "aliceblue"            "antiquewhite"         "antiquewhite1"        "antiquewhite2"       
+  [6] "antiquewhite3"        "antiquewhite4"        "aquamarine"           "aquamarine1"          "aquamarine2"         
+ [11] "aquamarine3"          "aquamarine4"          "azure"                "azure1"               "azure2"              
+ [16] "azure3"               "azure4"               "beige"                "bisque"               "bisque1"             
+ [21] "bisque2"              "bisque3"              "bisque4"              "black"                "blanchedalmond"      
+ [26] "blue"                 "blue1"                "blue2"                "blue3"                "blue4"               
+ [31] "blueviolet"           "brown"                "brown1"               "brown2"               "brown3"              
+ [36] "brown4"               "burlywood"            "burlywood1"           "burlywood2"           "burlywood3"          
+ [41] "burlywood4"           "cadetblue"            "cadetblue1"           "cadetblue2"           "cadetblue3"          
+ [46] "cadetblue4"           "chartreuse"           "chartreuse1"          "chartreuse2"          "chartreuse3"         
+ [51] "chartreuse4"          "chocolate"            "chocolate1"           "chocolate2"           "chocolate3"          
+ [56] "chocolate4"           "coral"                "coral1"               "coral2"               "coral3"              
+ [61] "coral4"               "cornflowerblue"       "cornsilk"             "cornsilk1"            "cornsilk2"           
+ [66] "cornsilk3"            "cornsilk4"            "cyan"                 "cyan1"                "cyan2"               
+ [71] "cyan3"                "cyan4"                "darkblue"             "darkcyan"             "darkgoldenrod"       
+ [76] "darkgoldenrod1"       "darkgoldenrod2"       "darkgoldenrod3"       "darkgoldenrod4"       "darkgray"            
+ [81] "darkgreen"            "darkgrey"             "darkkhaki"            "darkmagenta"          "darkolivegreen"      
+ [86] "darkolivegreen1"      "darkolivegreen2"      "darkolivegreen3"      "darkolivegreen4"      "darkorange"          
+ [91] "darkorange1"          "darkorange2"          "darkorange3"          "darkorange4"          "darkorchid"          
+ [96] "darkorchid1"          "darkorchid2"          "darkorchid3"          "darkorchid4"          "darkred"             
+[101] "darksalmon"           "darkseagreen"         "darkseagreen1"        "darkseagreen2"        "darkseagreen3"       
+[106] "darkseagreen4"        "darkslateblue"        "darkslategray"        "darkslategray1"       "darkslategray2"      
+[111] "darkslategray3"       "darkslategray4"       "darkslategrey"        "darkturquoise"        "darkviolet"          
+[116] "deeppink"             "deeppink1"            "deeppink2"            "deeppink3"            "deeppink4"           
+[121] "deepskyblue"          "deepskyblue1"         "deepskyblue2"         "deepskyblue3"         "deepskyblue4"        
+[126] "dimgray"              "dimgrey"              "dodgerblue"           "dodgerblue1"          "dodgerblue2"         
+[131] "dodgerblue3"          "dodgerblue4"          "firebrick"            "firebrick1"           "firebrick2"          
+[136] "firebrick3"           "firebrick4"           "floralwhite"          "forestgreen"          "gainsboro"           
+[141] "ghostwhite"           "gold"                 "gold1"                "gold2"                "gold3"               
+[146] "gold4"                "goldenrod"            "goldenrod1"           "goldenrod2"           "goldenrod3"          
+[151] "goldenrod4"           "gray"                 "gray0"                "gray1"                "gray2"               
+[156] "gray3"                "gray4"                "gray5"                "gray6"                "gray7"               
+[161] "gray8"                "gray9"                "gray10"               "gray11"               "gray12"              
+[166] "gray13"               "gray14"               "gray15"               "gray16"               "gray17"              
+[171] "gray18"               "gray19"               "gray20"               "gray21"               "gray22"              
+[176] "gray23"               "gray24"               "gray25"               "gray26"               "gray27"              
+[181] "gray28"               "gray29"               "gray30"               "gray31"               "gray32"              
+[186] "gray33"               "gray34"               "gray35"               "gray36"               "gray37"              
+[191] "gray38"               "gray39"               "gray40"               "gray41"               "gray42"              
+[196] "gray43"               "gray44"               "gray45"               "gray46"               "gray47"              
+[201] "gray48"               "gray49"               "gray50"               "gray51"               "gray52"              
+[206] "gray53"               "gray54"               "gray55"               "gray56"               "gray57"              
+[211] "gray58"               "gray59"               "gray60"               "gray61"               "gray62"              
+[216] "gray63"               "gray64"               "gray65"               "gray66"               "gray67"              
+[221] "gray68"               "gray69"               "gray70"               "gray71"               "gray72"              
+[226] "gray73"               "gray74"               "gray75"               "gray76"               "gray77"              
+[231] "gray78"               "gray79"               "gray80"               "gray81"               "gray82"              
+[236] "gray83"               "gray84"               "gray85"               "gray86"               "gray87"              
+[241] "gray88"               "gray89"               "gray90"               "gray91"               "gray92"              
+[246] "gray93"               "gray94"               "gray95"               "gray96"               "gray97"              
+[251] "gray98"               "gray99"               "gray100"              "green"                "green1"              
+[256] "green2"               "green3"               "green4"               "greenyellow"          "grey"                
+[261] "grey0"                "grey1"                "grey2"                "grey3"                "grey4"               
+[266] "grey5"                "grey6"                "grey7"                "grey8"                "grey9"               
+[271] "grey10"               "grey11"               "grey12"               "grey13"               "grey14"              
+[276] "grey15"               "grey16"               "grey17"               "grey18"               "grey19"              
+[281] "grey20"               "grey21"               "grey22"               "grey23"               "grey24"              
+[286] "grey25"               "grey26"               "grey27"               "grey28"               "grey29"              
+[291] "grey30"               "grey31"               "grey32"               "grey33"               "grey34"              
+[296] "grey35"               "grey36"               "grey37"               "grey38"               "grey39"              
+[301] "grey40"               "grey41"               "grey42"               "grey43"               "grey44"              
+[306] "grey45"               "grey46"               "grey47"               "grey48"               "grey49"              
+[311] "grey50"               "grey51"               "grey52"               "grey53"               "grey54"              
+[316] "grey55"               "grey56"               "grey57"               "grey58"               "grey59"              
+[321] "grey60"               "grey61"               "grey62"               "grey63"               "grey64"              
+[326] "grey65"               "grey66"               "grey67"               "grey68"               "grey69"              
+[331] "grey70"               "grey71"               "grey72"               "grey73"               "grey74"              
+[336] "grey75"               "grey76"               "grey77"               "grey78"               "grey79"              
+[341] "grey80"               "grey81"               "grey82"               "grey83"               "grey84"              
+[346] "grey85"               "grey86"               "grey87"               "grey88"               "grey89"              
+[351] "grey90"               "grey91"               "grey92"               "grey93"               "grey94"              
+[356] "grey95"               "grey96"               "grey97"               "grey98"               "grey99"              
+[361] "grey100"              "honeydew"             "honeydew1"            "honeydew2"            "honeydew3"           
+[366] "honeydew4"            "hotpink"              "hotpink1"             "hotpink2"             "hotpink3"            
+[371] "hotpink4"             "indianred"            "indianred1"           "indianred2"           "indianred3"          
+[376] "indianred4"           "ivory"                "ivory1"               "ivory2"               "ivory3"              
+[381] "ivory4"               "khaki"                "khaki1"               "khaki2"               "khaki3"              
+[386] "khaki4"               "lavender"             "lavenderblush"        "lavenderblush1"       "lavenderblush2"      
+[391] "lavenderblush3"       "lavenderblush4"       "lawngreen"            "lemonchiffon"         "lemonchiffon1"       
+[396] "lemonchiffon2"        "lemonchiffon3"        "lemonchiffon4"        "lightblue"            "lightblue1"          
+[401] "lightblue2"           "lightblue3"           "lightblue4"           "lightcoral"           "lightcyan"           
+[406] "lightcyan1"           "lightcyan2"           "lightcyan3"           "lightcyan4"           "lightgoldenrod"      
+[411] "lightgoldenrod1"      "lightgoldenrod2"      "lightgoldenrod3"      "lightgoldenrod4"      "lightgoldenrodyellow"
+[416] "lightgray"            "lightgreen"           "lightgrey"            "lightpink"            "lightpink1"          
+[421] "lightpink2"           "lightpink3"           "lightpink4"           "lightsalmon"          "lightsalmon1"        
+[426] "lightsalmon2"         "lightsalmon3"         "lightsalmon4"         "lightseagreen"        "lightskyblue"        
+[431] "lightskyblue1"        "lightskyblue2"        "lightskyblue3"        "lightskyblue4"        "lightslateblue"      
+[436] "lightslategray"       "lightslategrey"       "lightsteelblue"       "lightsteelblue1"      "lightsteelblue2"     
+[441] "lightsteelblue3"      "lightsteelblue4"      "lightyellow"          "lightyellow1"         "lightyellow2"        
+[446] "lightyellow3"         "lightyellow4"         "limegreen"            "linen"                "magenta"             
+[451] "magenta1"             "magenta2"             "magenta3"             "magenta4"             "maroon"              
+[456] "maroon1"              "maroon2"              "maroon3"              "maroon4"              "mediumaquamarine"    
+[461] "mediumblue"           "mediumorchid"         "mediumorchid1"        "mediumorchid2"        "mediumorchid3"       
+[466] "mediumorchid4"        "mediumpurple"         "mediumpurple1"        "mediumpurple2"        "mediumpurple3"       
+[471] "mediumpurple4"        "mediumseagreen"       "mediumslateblue"      "mediumspringgreen"    "mediumturquoise"     
+[476] "mediumvioletred"      "midnightblue"         "mintcream"            "mistyrose"            "mistyrose1"          
+[481] "mistyrose2"           "mistyrose3"           "mistyrose4"           "moccasin"             "navajowhite"         
+[486] "navajowhite1"         "navajowhite2"         "navajowhite3"         "navajowhite4"         "navy"                
+[491] "navyblue"             "oldlace"              "olivedrab"            "olivedrab1"           "olivedrab2"          
+[496] "olivedrab3"           "olivedrab4"           "orange"               "orange1"              "orange2"             
+[501] "orange3"              "orange4"              "orangered"            "orangered1"           "orangered2"          
+[506] "orangered3"           "orangered4"           "orchid"               "orchid1"              "orchid2"             
+[511] "orchid3"              "orchid4"              "palegoldenrod"        "palegreen"            "palegreen1"          
+[516] "palegreen2"           "palegreen3"           "palegreen4"           "paleturquoise"        "paleturquoise1"      
+[521] "paleturquoise2"       "paleturquoise3"       "paleturquoise4"       "palevioletred"        "palevioletred1"      
+[526] "palevioletred2"       "palevioletred3"       "palevioletred4"       "papayawhip"           "peachpuff"           
+[531] "peachpuff1"           "peachpuff2"           "peachpuff3"           "peachpuff4"           "peru"                
+[536] "pink"                 "pink1"                "pink2"                "pink3"                "pink4"               
+[541] "plum"                 "plum1"                "plum2"                "plum3"                "plum4"               
+[546] "powderblue"           "purple"               "purple1"              "purple2"              "purple3"             
+[551] "purple4"              "red"                  "red1"                 "red2"                 "red3"                
+[556] "red4"                 "rosybrown"            "rosybrown1"           "rosybrown2"           "rosybrown3"          
+[561] "rosybrown4"           "royalblue"            "royalblue1"           "royalblue2"           "royalblue3"          
+[566] "royalblue4"           "saddlebrown"          "salmon"               "salmon1"              "salmon2"             
+[571] "salmon3"              "salmon4"              "sandybrown"           "seagreen"             "seagreen1"           
+[576] "seagreen2"            "seagreen3"            "seagreen4"            "seashell"             "seashell1"           
+[581] "seashell2"            "seashell3"            "seashell4"            "sienna"               "sienna1"             
+[586] "sienna2"              "sienna3"              "sienna4"              "skyblue"              "skyblue1"            
+[591] "skyblue2"             "skyblue3"             "skyblue4"             "slateblue"            "slateblue1"          
+[596] "slateblue2"           "slateblue3"           "slateblue4"           "slategray"            "slategray1"          
+[601] "slategray2"           "slategray3"           "slategray4"           "slategrey"            "snow"                
+[606] "snow1"                "snow2"                "snow3"                "snow4"                "springgreen"         
+[611] "springgreen1"         "springgreen2"         "springgreen3"         "springgreen4"         "steelblue"           
+[616] "steelblue1"           "steelblue2"           "steelblue3"           "steelblue4"           "tan"                 
+[621] "tan1"                 "tan2"                 "tan3"                 "tan4"                 "thistle"             
+[626] "thistle1"             "thistle2"             "thistle3"             "thistle4"             "tomato"              
+[631] "tomato1"              "tomato2"              "tomato3"              "tomato4"              "turquoise"           
+[636] "turquoise1"           "turquoise2"           "turquoise3"           "turquoise4"           "violet"              
+[641] "violetred"            "violetred1"           "violetred2"           "violetred3"           "violetred4"          
+[646] "wheat"                "wheat1"               "wheat2"               "wheat3"               "wheat4"              
+[651] "whitesmoke"           "yellow"               "yellow1"              "yellow2"              "yellow3"             
+[656] "yellow4"              "yellowgreen"         
+
+| Not exactly. Give it another go. Or, type info() for more options.
+
+| Type sample(colors(),10) at the command prompt.
+
+> sample(colors(),10)
+ [1] "cadetblue"       "gray85"          "palegreen4"      "darkslateblue"   "darkcyan"        "gray62"          "darkolivegreen1"
+ [8] "skyblue2"        "grey97"          "goldenrod4"     
+
+| All that practice is paying off!
+
+  |================                                                                                                              |  13%
+| We see a lot of variety in the colors, some of which are names followed by numbers indicating that there are multiple forms of that
+| particular color.
+
+...
+
+  |==================                                                                                                            |  14%
+| So you're free to use any of these 600+ colors listed by the colors function. However, two additional functions from grDevices,
+| colorRamp and colorRampPalette, give you more options. Both of these take color names as arguments and use them as "palettes", that
+| is, these argument colors are blended in different proportions to form new colors.
+
+...
+
+  |====================                                                                                                          |  16%
+| The first, colorRamp, takes a palette of colors (the arguments) and returns a function that takes values between 0 and 1 as
+| arguments. The 0 and 1 correspond to the extremes of the color palette. Arguments between 0 and 1 return blends of these extremes.
+
+...
+
+  |======================                                                                                                        |  17%
+| Let's see what this means. Assign to the variable pal the output of a call to colorRamp with the single argument, c("red","blue").
+
+> pal <- colorRamp(c("red","blue"))
+
+| All that hard work is paying off!
+
+  |========================                                                                                                      |  19%
+| We don't see any output, but R has created the function pal which we can call with a single argument between 0 and 1. Call pal now
+| with the argument 0.
+
+> pal(0)
+     [,1] [,2] [,3]
+[1,]  255    0    0
+
+| That's the answer I was looking for.
+
+  |==========================                                                                                                    |  20%
+| We see a 1 by 3 array with 255 as the first entry and 0 in the other 2. This 3 long vector corresponds to red, green, blue (RGB)
+| color encoding commonly used in televisions and monitors. In R, 24 bits are used to represent colors. Think of these 24 bits as 3
+| sets of 8 bits, each of which represents an intensity for one of the colors red, green, and blue.
+
+...
+
+  |===========================                                                                                                   |  22%
+| The 255 returned from the pal(0) call corresponds to the largest possible number represented with 8 bits, so the vector (255,0,0)
+| contains only red (no green or blue), and moreover, it's the highest possible value of red.
+
+...
+
+  |=============================                                                                                                 |  23%
+| Given that you created pal with the palette containing "red" and "blue", what color do you think will be represented by the vector
+| that pal(1) returns? Recall that pal will only take arguments between 0 and 1, so 1 is the largest argument you can pass it.
+
+1: yellow
+2: green
+3: blue
+4: red
+
+Selection: 3
+
+| You are quite good my friend!
+
+  |===============================                                                                                               |  25%
+| Check your answer now by calling pal with the argument 1.
+
+> pal(1)
+     [,1] [,2] [,3]
+[1,]    0    0  255
+
+| You're the best!
+
+  |=================================                                                                                             |  26%
+| You see the vector (0,0,255) which represents the highest intensity of blue. What vector do you think the call pal(.5) will return?
+
+1: (127.5,0,127.5)
+2: (0,255,0)
+3: (255,0,255)
+4: (255,255,255)
+
+Selection: 1
+
+| You are doing so well!
+
+  |===================================                                                                                           |  28%
+| The function pal can take more than one argument. It returns one 3-long (or 4-long, but more about this later) vector for each
+| argument. To see this in action, call pal with the argument seq(0,1,len=6).
+
+> seq(0,1,len=6)
+[1] 0.0 0.2 0.4 0.6 0.8 1.0
+
+| Almost! Try again. Or, type info() for more options.
+
+| Type pal(seq(0,1,len=6)) at the command prompt.
+
+> pal(seq(0,1,len=6))
+     [,1] [,2] [,3]
+[1,]  255    0    0
+[2,]  204    0   51
+[3,]  153    0  102
+[4,]  102    0  153
+[5,]   51    0  204
+[6,]    0    0  255
+
+| Great job!
+
+  |=====================================                                                                                         |  29%
+| Six vectors (each of length 3) are returned. The i-th vector is identical to output that would be returned by the call pal(i/5) for
+| i=0,...5. We see that the i-th row (for i=1,...6) differs from the (i-1)-st row in the following way. Its red entry is 51 = 255/5
+| points lower and its blue entry is 51 points higher.
+
+...
+
+  |======================================                                                                                        |  30%
+| So pal creates colors using the palette we specified when we called colorRamp. In this example none of pal's outputs will ever
+| contain green since it wasn't in our initial palette.
+
+...
+
+  |========================================                                                                                      |  32%
+| We'll turn now to colorRampPalette, a function similar to colorRamp. It also takes a palette of colors and returns a function. This
+| function, however, takes integer arguments (instead of numbers between 0 and 1) and returns a vector of colors each of which is a
+| blend of colors of the original palette.
+
+...
+
+  |==========================================                                                                                    |  33%
+| The argument you pass to the returned function specifies the number of colors you want returned. Each element of the returned vector
+| is a 24 bit number, represented as 6 hexadecimal characters, which range from 0 to F. This set of 6 hex characters represents the
+| intensities of red, green, and blue, 2 characters for each color.
+
+...
+
+  |============================================                                                                                  |  35%
+| To see this better, assign to the variable p1 the output of a call to colorRampPalette with the single argument, c("red","blue").
+| We'll compare it to our experiments using colorRamp.
+
+> p1<-c("red","blue")
+
+| Not quite right, but keep trying. Or, type info() for more options.
+
+| Type p1 <- colorRampPalette(c("red","blue")) at the command prompt.
+
+> p1<-colorRampPalette(c("red","blue"))
+
+| That's the answer I was looking for.
+
+  |==============================================                                                                                |  36%
+| Now call p1 with the argument 2.
+
+> p1(2)
+[1] "#FF0000" "#0000FF"
+
+| You got it right!
+
+  |===============================================                                                                               |  38%
+| We see a 2-long vector is returned. The first entry FF0000 represents red. The FF is hexadecimal for 255, the same value returned by
+| our call pal(0). The second entry 0000FF represents blue, also with intensity 255.
+
+...
+
+  |=================================================                                                                             |  39%
+| Now call p1 with the argument 6. Let's see if we get the same result as we did when we called pal with the argument seq(0,1,len=6).
+
+> p1(6)
+[1] "#FF0000" "#CC0033" "#990066" "#650099" "#3200CC" "#0000FF"
+
+| Excellent work!
+
+  |===================================================                                                                           |  41%
+| Now we get the 6-long vector (FF0000, CC0033, 990066, 650099, 3200CC, 0000FF). We see the two ends (FF0000 and 0000FF) are consistent
+| with the colors red and blue. How about CC0033? Type 0xcc or 0xCC at the command line to see the decimal equivalent of this hex
+| number. You must include the 0 before the x to specify that you're entering a hexadecimal number.
+
+> 0xCC
+[1] 204
+
+| Excellent job!
+
+  |=====================================================                                                                         |  42%
+| So 0xCC equals 204 and we can easily convert hex 33 to decimal, as in 0x33=3*16+3=51. These were exactly the numbers we got in the
+| second row returned from our call to pal(seq(0,1,len=6)). We see that 4 of the 6 numbers agree with our earlier call to pal. Two of
+| the 6 differ slightly.
+
+...
+
+  |=======================================================                                                                       |  43%
+| We can also form palettes using colors other than red, green and blue. Form a palette, p2, by calling colorRampPalette with the
+| colors "red" and "yellow". Remember to concatenate them into a single argument.
+
+> p2<-colorRampPalette(c("red","yellow"))
+
+| You nailed it! Good job!
+
+  |=========================================================                                                                     |  45%
+| Now call p2 with the argument 2. This will show us the two extremes of the blends of colors we'll get.
+
+> p2(2)
+[1] "#FF0000" "#FFFF00"
+
+| All that hard work is paying off!
+
+  |==========================================================                                                                    |  46%
+| Not surprisingly the first color we see is FF0000, which we know represents red. The second color returned, FFFF00, must represent
+| yellow, a combination of full intensity red and full intensity green. This makes sense, since yellow falls between red and green on
+| the color wheel as we see here. (We borrowed this image from lucaskrech.com.)
+
+...
+
+  |============================================================                                                                  |  48%
+| Let's now call p2 with the argument 10. This will show us how the two extremes, red and yellow, are blended together.
+
+> p2(10)
+ [1] "#FF0000" "#FF1C00" "#FF3800" "#FF5500" "#FF7100" "#FF8D00" "#FFAA00" "#FFC600" "#FFE200" "#FFFF00"
+
+| You are doing so well!
+
+  |==============================================================                                                                |  49%
+| So we see the 10-long vector. For each element, the red component is fixed at FF, and the green component grows from 00 (at the first
+| element) to FF (at the last).
+
+...
+
+  |================================================================                                                              |  51%
+| This is all fine and dandy but you're probably wondering when you can see how all these colors show up in a display. We copied some
+| code from the R documentation pages (color.scale if you're interested) and created a function for you, showMe. This takes as an
+| argument, a color vector, which as you know, is precisely what calls to p1 and p2 return to you. Call showMe now with p1(20).
+
+> showME(p1(20))
+Error in showME(p1(20)) : could not find function "showME"
+> showMe(p1(20))
+
+| You got it right!
+
+  |==================================================================                                                            |  52%
+| We see the interpolated palette here. Low values in the lower left corner are red and as you move to the upper right, the colors move
+| toward blue. Now call showMe with p2(20) as its argument.
+
+> showMe(p1\2(20))
+Error: unexpected input in "showMe(p1\"
+> showMe(p2(20))
+
+| That's the answer I was looking for.
+
+  |====================================================================                                                          |  54%
+| Here we see a similar display, the colors moving from red to yellow, the base colors of our p2 palette. For fun, see what p2(2) looks
+| like using showMe.
+
+> play()
+
+| Entering play mode. Experiment as you please, then type nxt() when you are ready to resume the lesson.
+
+> p1
+function (n) 
+{
+    x <- ramp(seq.int(0, 1, length.out = n))
+    if (ncol(x) == 4L) 
+        rgb(x[, 1L], x[, 2L], x[, 3L], x[, 4L], maxColorValue = 255)
+    else rgb(x[, 1L], x[, 2L], x[, 3L], maxColorValue = 255)
+}
+<bytecode: 0x0000020a363357b0>
+<environment: 0x0000020a366978c0>
+> p1(20)
+ [1] "#FF0000" "#F1000D" "#E4001A" "#D60028" "#C90035" "#BB0043" "#AE0050" "#A1005D" "#93006B" "#860078" "#780086" "#6B0093" "#5D00A1"
+[14] "#5000AE" "#4300BB" "#3500C9" "#2800D6" "#1A00E4" "#0D00F1" "#0000FF"
+> p2(20)
+ [1] "#FF0000" "#FF0D00" "#FF1A00" "#FF2800" "#FF3500" "#FF4300" "#FF5000" "#FF5D00" "#FF6B00" "#FF7800" "#FF8600" "#FF9300" "#FFA100"
+[14] "#FFAE00" "#FFBB00" "#FFC900" "#FFD600" "#FFE400" "#FFF100" "#FFFF00"
+> nxt()
+
+| Resuming lesson...
+
+
+| Here we see a similar display, the colors moving from red to yellow, the base colors of our p2 palette. For fun, see what p2(2) looks
+| like using showMe.
+
+> showMe(p2(2))
+
+| You got it right!
+
+  |=====================================================================                                                         |  55%
+| A much more basic pattern, simple but elegant.
+
+...
+
+  |=======================================================================                                                       |  57%
+| We mentioned before that colorRamp (and colorRampPalette) could return a 3 or 4 long vector of colors. We saw 3-long vectors returned
+| indicating red, green, and blue intensities. What would the 4th entry be?
+
+...
+
+  |=========================================================================                                                     |  58%
+| We'll answer this indirectly. First, look at the function p1 that colorRampPalette returned to you. Just type p1 at the command
+| prompt.
+
+> p1
+function (n) 
+{
+    x <- ramp(seq.int(0, 1, length.out = n))
+    if (ncol(x) == 4L) 
+        rgb(x[, 1L], x[, 2L], x[, 3L], x[, 4L], maxColorValue = 255)
+    else rgb(x[, 1L], x[, 2L], x[, 3L], maxColorValue = 255)
+}
+<bytecode: 0x0000020a363357b0>
+<environment: 0x0000020a366978c0>
+
+| Keep working like that and you'll get there!
+
+  |===========================================================================                                                   |  59%
+| We see that p1 is a short function with one argument, n. The argument n is used as the length in a call to the function seq.int,
+| itself an argument to the function ramp. We can infer that ramp is just going to divide the interval from 0 to 1 into n pieces.
+
+...
+
+  |=============================================================================                                                 |  61%
+| The heart of p1 is really the call to the function rgb with either 4 or 5 arguments. Use the ?fun construct to look at the R
+| documentation for rgb now.
+
+> ?rgb
+
+| You nailed it! Good job!
+
+  |===============================================================================                                               |  62%
+| We see that rgb is a color specification function that can be used to produce any color with red, green, blue proportions. We see the
+| maxColorValue is 1 by default, so if we called rgb with values for red, green and blue, we would specify numbers at most 1 (assuming
+| we didn't change the default for maxColorValue). According to the documentation, what is the maximum number of arguments rgb can
+| have?
+
+1: 5
+2: 3
+3: 6
+4: 4
+
+Selection: 3
+
+| Keep working like that and you'll get there!
+
+  |================================================================================                                              |  64%
+| So the fourth argument is alpha which can be a logical, i.e., either TRUE or FALSE, or a numerical value. Create the function p3 now
+| by calling colorRampPalette with the colors blue and green (remember to concatenate them into a single argument) and setting the
+| alpha argument to .5.
+
+> colorRampPalette(c("blue","green"),alpha=0.5)
+function (n) 
+{
+    x <- ramp(seq.int(0, 1, length.out = n))
+    if (ncol(x) == 4L) 
+        rgb(x[, 1L], x[, 2L], x[, 3L], x[, 4L], maxColorValue = 255)
+    else rgb(x[, 1L], x[, 2L], x[, 3L], maxColorValue = 255)
+}
+<bytecode: 0x0000020a363357b0>
+<environment: 0x0000020a35ecce50>
+
+| That's not the answer I was looking for, but try again. Or, type info() for more options.
+
+| Type p3 <- colorRampPalette(c("blue","green"),alpha=.5) at the command prompt.
+
+> p3<-colorRampPalette(c("blue","green"),alpha=0.5)
+
+| Keep working like that and you'll get there!
+
+  |==================================================================================                                            |  65%
+| Now call p3 with the argument 5.
+
+> p3(5)
+[1] "#0000FFFF" "#003FBFFF" "#007F7FFF" "#00BF3FFF" "#00FF00FF"
+
+| Excellent work!
+
+  |====================================================================================                                          |  67%
+| We see that in the 5-long vector that the call returned, each element has 32 bits, 4 groups of 8 bits each. The last 8 bits represent
+| the value of alpha. Since it was NOT ZERO in the call to colorRampPalette, it gets the maximum FF value. (The same result would
+| happen if alpha had been set to TRUE.) When it was 0 or FALSE (as in previous calls to colorRampPalette) it was given the value 00
+| and wasn't shown. The leftmost 24 bits of each element are the same RGB encoding we previously saw.
+
+...
+
+  |======================================================================================                                        |  68%
+| So what is alpha? Alpha represents an opacity level, that is, how transparent should the colors be. We can add color transparency
+| with the alpha parameter to calls to rgb. We haven't seen any examples of this yet, but we will now.
+
+...
+
+  |========================================================================================                                      |  70%
+| We generated 1000 random normal pairs for you in the variables x and y. We'll plot them in a scatterplot by calling plot with 4
+| arguments. The variables x and y are the first 2. The third is the print character argument pch. Set this equal to 19 (filled
+| circles). The final argument is col which should be set equal to a call to rgb. Give rgb 3 arguments, 0, .5, and .5.
+
+> plot(x,y,pch=19,col=rgb(0,0.5,0.5))
+
+| You are amazing!
+
+  |=========================================================================================                                     |  71%
+| Well this picture is okay for a scatterplot, a nice mix of blue and green, but it really doesn't tell us too much information in the
+| center portion, since the points are so thick there. We see there are a lot of points, but is one area more filled than another? We
+| can't really discriminate between different point densities. This is where the alpha argument can help us. Recall your plot command
+| (use the up arrow) and add a 4th argument, .3, to the call to rgb. This will be our value for alpha.
+
+> plot(x,y,pch=19,col=rgb(0,0.5,0.5,0.3))
+
+| You got it!
+
+  |===========================================================================================                                   |  72%
+| Clearly this is better. It shows us where, specifically, the densest areas of the scatterplot really are.
+
+...
+
+  |=============================================================================================                                 |  74%
+| Our last topic for this lesson is the RColorBrewer Package, available on CRAN, that contains interesting and useful color palettes,
+| of which there are 3 types, sequential, divergent, and qualitative. Which one you would choose to use depends on your data.
+
+...
+
+  |===============================================================================================                               |  75%
+| Here's a picture of the palettes available from this package. The top section shows the sequential palettes in which the colors are
+| ordered from light to dark. The divergent palettes are at the bottom. Here the neutral color (white) is in the center, and as you
+| move from the middle to the two ends of each palette, the colors increase in intensity. The middle display shows the qualitative
+| palettes which look like collections of random colors. These might be used to distinguish factors in your data.
+
+...
+
+  |=================================================================================================                             |  77%
+| These colorBrewer palettes can be used in conjunction with the colorRamp() and colorRampPalette() functions. You would use colors
+| from a colorBrewer palette as your base palette,i.e., as arguments to colorRamp or colorRampPalette which would interpolate them to
+| create new colors.
+
+...
+
+  |===================================================================================================                           |  78%
+| As an example of this, create a new object, cols by calling the function brewer.pal with 2 arguments, 3 and "BuGn". The string "BuGn"
+| is the second last palette in the sequential display. The 3 tells the function how many different colors we want.
+
+> brewer.pal(3,"BuGn")
+[1] "#E5F5F9" "#99D8C9" "#2CA25F"
+
+| Not quite right, but keep trying. Or, type info() for more options.
+
+| Type cols <- brewer.pal(3, "BuGn") at the command prompt.
+
+> cols<-brewer.pal(3,"BuGn")
+
+| Keep up the great work!
+
+  |====================================================================================================                          |  80%
+| Use showMe to look at cols now.
+
+> showMe(cols)
+
+| That's a job well done!
+
+  |======================================================================================================                        |  81%
+| We see 3 colors, mixes of blue and green. Now create the variable pal by calling colorRampPalette with cols as its argument.
+
+> pal(colorRampPalette(cols))
+Error in .approxfun(x, y, v, method, yleft, yright, f, na.rm) : 
+  cannot coerce type 'closure' to vector of type 'double'
+> pal<-colorRampPalette(cols)
+
+| Keep working like that and you'll get there!
+
+  |========================================================================================================                      |  83%
+| The call showMe(pal(3)) would be identical to the showMe(cols) call. So use showMe to look at pal(20).
+
+> showMe(pal(3))
+
+| That's not the answer I was looking for, but try again. Or, type info() for more options.
+
+| Type showMe(pal(20)) at the command prompt.
+
+> showMe(pal(20))
+
+| That's a job well done!
+
+  |==========================================================================================================                    |  84%
+| Now we can use the colors in pal(20) to display topographic information on Auckland's Maunga Whau Volcano. R provides this
+| information in a matrix called volcano which is included in the package datasets.  Call the R function image with volcano as its
+| first argument and col set equal to pal(20) as its second.
+
+> image(volcano,col=pal(20))
+
+| Your dedication is inspiring!
+
+  |============================================================================================================                  |  86%
+| We see that the colors here of the sequential palette clue us in on the topography. The darker colors are more concentrated than the
+| lighter ones. Just for fun, recall your last command calling image and instead of pal(20), use p1(20) as the second argument.
+
+> image(volcano,col=p1(20))
+
+| You nailed it! Good job!
+
+  |==============================================================================================================                |  87%
+| Not as nice a picture since the palette isn't as well suited to this data, but that's okay. It's review time!!!!
+
+...play()
+
+  |===============================================================================================================               |  88%
+| True or False? Careful use of colors in plots/maps/etc. can make it easier for the reader to understand what points you're trying to
+| convey.
+
+1: False
+2: True
+
+Selection: 2
+
+| That's the answer I was looking for.
+
+  |=================================================================================================================             |  90%
+| Which of the following is an R package that provides color palettes for sequential, categorical, and diverging data?
+
+1: RColorBrewer
+2: RColorVintner
+3: RColorStewer
+4: RColorBluer
+
+Selection: 1
+
+| Great job!
+
+  |===================================================================================================================           |  91%
+| True or False? The colorRamp and colorRampPalette functions can be used in conjunction with color palettes to connect data to colors.
+
+1: True
+2: False
+
+Selection: 1
+
+| That's the answer I was looking for.
+
+  |=====================================================================================================================         |  93%
+| True or False?  Transparency can NEVER be used to clarify plots with many points
+
+1: True
+2: False
+
+Selection: 2
+
+| You are really on a roll!
+
+  |=======================================================================================================================       |  94%
+| True or False?  The call p7 <- colorRamp("red","blue") would work (i.e., not generate an error).
+
+1: True
+2: False
+
+Selection: 2
+
+| That's a job well done!
+
+  |=========================================================================================================================     |  96%
+| True or False?  The function colors returns only 10 colors.
+
+1: False
+2: True
+
+Selection: 1
+
+| Great job!
+
+  |==========================================================================================================================    |  97%
+| Transparency is determined by which parameter of the rgb function?
+
+1: it's all Greek to me
+2: beta
+3: alpha
+4: delta
+5: gamma
+
+Selection: 3
+
+| Nice work!
+
+  |============================================================================================================================  |  99%
+| Congratulations! We hope this lesson didn't make you see red. We're green with envy that you blue through it.
+
+...
+
+  |==============================================================================================================================| 100%
+| Would you like to receive credit for completing this course on Coursera.org?
+
+1: No
+2: Yes
