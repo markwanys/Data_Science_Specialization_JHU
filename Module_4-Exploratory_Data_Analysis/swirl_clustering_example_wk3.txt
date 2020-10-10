@@ -1,0 +1,921 @@
+| Clustering_Example. (Slides for this and other Data Science courses may be found at github
+| https://github.com/DataScienceSpecialization/courses/. If you care to use them, they must be downloaded as a zip file and viewed
+| locally. This lesson corresponds to 04_ExploratoryAnalysis/clusteringExample.)
+
+...
+
+  |==                                                                                                                            |   2%
+| In this lesson we'll apply some of the analytic techniques we learned in this course to data from the University of California,
+| Irvine. Specifically, the data we'll use is from UCI's Center for Machine Learning and Intelligent Systems. You can find out more
+| about the data at http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones. As this address indicates, the
+| data involves smartphones and recognizing human activity. Cool, right?
+
+...
+
+  |====                                                                                                                          |   3%
+| Our goal is to show you how to use exploratory data analysis to point you in fruitful directions of research, that is, towards
+| answerable questions. Exploratory data analysis is a "rough cut" or filter which helps you to find the most beneficial areas of
+| questioning so you can set your priorities accordingly.
+
+...
+
+  |======                                                                                                                        |   5%
+| We also hope to show you that "real-world" research isn't always neat and well-defined like textbook questions with clearcut answers.
+
+...
+
+  |========                                                                                                                      |   6%
+| We've loaded data from this study for you in a matrix called ssd.  Run the R command dim now to see its dimensions.
+
+> dim(ssd)
+[1] 7352  563
+
+| You are really on a roll!
+
+  |==========                                                                                                                    |   8%
+| Wow - ssd is pretty big, 7352 observations, each of 563 variables. Don't worry we'll only use a small portion of this "Human Activity
+| Recognition database".
+
+...
+
+  |============                                                                                                                  |   9%
+| The study creating this database involved 30 volunteers "performing activities of daily living (ADL) while carrying a waist-mounted
+| smartphone with embedded inertial sensors. ... Each person performed six activities ... wearing a smartphone (Samsung Galaxy S II) on
+| the waist. ... The experiments have been video-recorded to label the data manually.  The obtained dataset has been randomly
+| partitioned into two sets, where 70% of the volunteers was selected for generating the training data and 30% the test data."
+
+...
+
+  |==============                                                                                                                |  11%
+| Use the R command names with just the last two columns (562 and 563) of ssd to see what data they contain.
+
+> names(ssd)[c(562,563)]
+[1] "subject"  "activity"
+
+| Not quite right, but keep trying. Or, type info() for more options.
+
+| Type names(ssd[562:563]) at the command prompt.
+
+> names(ssd)[562:563]
+[1] "subject"  "activity"
+
+| That's not exactly what I'm looking for. Try again. Or, type info() for more options.
+
+| Type names(ssd[562:563]) at the command prompt.
+
+> names(ssd[562:563])
+[1] "subject"  "activity"
+
+| All that hard work is paying off!
+
+  |================                                                                                                              |  12%
+| These last 2 columns contain subject and activity information. We saw above that the gathered data had "been randomly partitioned
+| into two sets, where 70% of the volunteers was selected for generating the training data and 30% the test data." Run the R command
+| table with ssd$subject as its argument to see if the data in ssd contains training or test data.
+
+> ssd$subject
+   [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+  [66] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ [131] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ [196] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ [261] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ [326] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+ [391] 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+ [456] 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+ [521] 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+ [586] 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+ [651] 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
+ [716] 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
+ [781] 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
+ [846] 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
+ [911] 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
+ [976] 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 6 6 6 6 6 6 6 6 6 6
+ [ reached getOption("max.print") -- omitted 6352 entries ]
+
+| One more time. You can do it! Or, type info() for more options.
+
+| Type table(ssd$subject) at the command prompt.data."
+
+> table(ssd$subject)
+
+  1   3   5   6   7   8  11  14  15  16  17  19  21  22  23  25  26  27  28  29  30 
+347 341 302 325 308 281 316 323 328 366 368 360 408 321 372 409 392 376 382 344 383 
+
+| That's correct!
+
+  |==================                                                                                                            |  14%
+| From the number of subjects, would you infer that ssd contains training or test data?
+
+1: training
+2: test
+
+Selection: 1
+
+| You nailed it! Good job!
+
+  |====================                                                                                                          |  16%
+| So ssd contains only training data. If you ran the R command sum with table(ssd$subject) as its argument, what would the number you
+| get back represent?
+
+1: Huh?
+2: the number of columns in ssd
+3: the number of rows in ssd
+4: the number of rows and columns of ssd
+
+Selection: 3
+
+| You nailed it! Good job!
+
+  |======================                                                                                                        |  17%
+| Try it now (running sum on table(ssd$subject))to see if you get 7352, the number of rows in ssd, as a result.
+
+> sum(table(ssd$subject))
+[1] 7352
+
+| That's correct!
+
+  |========================                                                                                                      |  19%
+| So we're looking at training data from a machine learning repository. We can infer that this data is supposed to train machines to
+| recognize activity collected from the accelerometers and gyroscopes built into the smartphones that the subjects had strapped to
+| their waists. Run the R command table on ssd$activity to see what activities have been characterized by this data.
+
+> ssd$activity
+   [1] standing standing standing standing standing standing standing standing standing standing standing standing standing standing
+  [15] standing standing standing standing standing standing standing standing standing standing standing standing standing sitting 
+  [29] sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting 
+  [43] sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  laying   laying   laying   laying   laying  
+  [57] laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying  
+  [71] laying   laying   laying   laying   laying   laying   laying   laying   walk     walk     walk     walk     walk     walk    
+  [85] walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk    
+  [99] walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk    
+ [113] walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walkdown
+ [127] walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown
+ [141] walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkup   walkup   walkup   walkup  
+ [155] walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup  
+ [169] walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   standing standing standing standing standing standing
+ [183] standing standing standing standing standing standing standing standing standing standing standing standing standing standing
+ [197] standing standing standing standing standing standing sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting 
+ [211] sitting  sitting  sitting  laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying  
+ [225] laying   sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  laying  
+ [239] laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   walk     walk     walk     walk    
+ [253] walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk    
+ [267] walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk    
+ [281] walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk    
+ [295] walk     walk     walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkup   walkup   walkup   walkup   walkup  
+ [309] walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup  
+ [323] walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkdown walkdown walkdown walkdown walkdown walkdown
+ [337] walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown standing standing standing
+ [351] standing standing standing standing standing standing standing standing standing standing standing standing standing standing
+ [365] standing standing standing standing standing standing standing standing standing standing standing standing standing standing
+ [379] sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting 
+ [393] sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  laying   laying  
+ [407] laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying  
+ [421] laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying  
+ [435] walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk    
+ [449] walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk    
+ [463] walk     walk     walk     walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown
+ [477] walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkup   walkup  
+ [491] walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup  
+ [505] walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup  
+ [519] walkup   walkup   walkup   walkup   standing standing standing standing standing standing standing standing standing standing
+ [533] standing standing standing standing standing standing standing standing standing standing standing standing standing standing
+ [547] standing standing standing standing standing standing sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting 
+ [561] sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting 
+ [575] sitting  sitting  sitting  sitting  laying   laying   laying   laying   laying   laying   laying   laying   laying   laying  
+ [589] laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying  
+ [603] laying   laying   laying   laying   laying   laying   laying   laying   walk     walk     walk     walk     walk     walk    
+ [617] walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk    
+ [631] walk     walk     walk     walk     walk     walk     walk     walkdown walkdown walkdown walkdown walkdown walkdown walkdown
+ [645] walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown
+ [659] walkdown walkdown walkdown walkdown walkdown walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup  
+ [673] walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup  
+ [687] walkup   walkup   standing standing standing standing standing standing standing standing standing standing standing standing
+ [701] standing standing standing standing standing standing standing standing standing standing standing standing standing standing
+ [715] standing standing sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting 
+ [729] sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  laying   laying   laying  
+ [743] laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying  
+ [757] laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   walk     walk     walk    
+ [771] walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk    
+ [785] walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walkdown
+ [799] walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown
+ [813] walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkup   walkup   walkup   walkup  
+ [827] walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup  
+ [841] walkup   walkup   walkup   walkup   walkup   walkup   walkup   standing standing standing standing standing standing standing
+ [855] standing standing standing standing standing standing standing standing standing standing standing standing standing standing
+ [869] standing standing standing standing standing standing standing sitting  sitting  sitting  sitting  sitting  sitting  sitting 
+ [883] sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting  sitting 
+ [897] laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   laying  
+ [911] laying   laying   laying   laying   laying   laying   laying   laying   laying   laying   walk     walk     walk     walk    
+ [925] walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk     walk    
+ [939] walk     walk     walk     walk     walk     walk     walk     walk     walkdown walkdown walkdown walkdown walkdown walkdown
+ [953] walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown walkdown
+ [967] walkdown walkdown walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup  
+ [981] walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   walkup   standing standing standing standing
+ [995] standing standing standing standing standing standing
+ [ reached getOption("max.print") -- omitted 6352 entries ]
+Levels: laying sitting standing walk walkdown walkup
+
+| Try again. Getting it right on the first try is boring anyway! Or, type info() for more options.
+
+| Type table(ssd$activity) at the command prompt.
+
+> table(ssd$activity)
+
+  laying  sitting standing     walk walkdown   walkup 
+    1407     1286     1374     1226      986     1073 
+
+| That's a job well done!
+
+  |==========================                                                                                                    |  20%
+| We have 6 activities, 3 passive (laying, standing and sitting) and 3 active which involve walking. If you ran the R command sum with
+| table(ssd$activity) as its argument, what would the number you get back represent?
+
+1: the number of columns in ssd
+2: Huh?
+3: the number of rows and columns of ssd
+4: the number of rows in ssd
+
+Selection: 4
+
+| You are doing so well!
+
+  |============================                                                                                                  |  22%
+| Because it's training data, each row is labeled with the correct activity (from the 6 possible) and associated with the column
+| measurements (from the accelerometer and gyroscope). We're interested in questions such as, "Is the correlation between the
+| measurements and activities good enough to train a machine?" so that "Given a set of 561 measurements, would a trained machine be
+| able to determine which of the 6 activities the person was doing?"
+
+...
+
+  |==============================                                                                                                |  23%
+| First, let's massage the data a little so it's easier to work with. We've already run the R command transform on the data so that
+| activities are factors. This will let us color code them when we generate plots. Let's look at only the first subject (numbered 1).
+| Create the variable sub1 by assigning to it the output of the R command subset with ssd as the first argument and the boolean,
+| subject equal to 1, as the second.
+
+> sub1 <- subset(ssd,subject=1)
+
+| Not quite! Try again. Or, type info() for more options.
+
+| Type sub1 <- subset(ssd, subject == 1) at the command prompt.
+
+> sub1 <- subset(ssd,subject==1)
+
+| That's the answer I was looking for.
+
+  |================================                                                                                              |  25%
+| Look at the dimensions of sub1 now.
+
+> dim(sub1)
+[1] 347 563
+
+| You are amazing!
+
+  |=================================                                                                                             |  27%
+| So sub1 has fewer than 400 rows now, but still a lot of columns which contain measurements. Use names on the first 12 columns of sub1
+| to see what kind of data we have.
+
+> names(sub1[,1:12])
+ [1] "tBodyAcc.mean...X" "tBodyAcc.mean...Y" "tBodyAcc.mean...Z" "tBodyAcc.std...X"  "tBodyAcc.std...Y"  "tBodyAcc.std...Z" 
+ [7] "tBodyAcc.mad...X"  "tBodyAcc.mad...Y"  "tBodyAcc.mad...Z"  "tBodyAcc.max...X"  "tBodyAcc.max...Y"  "tBodyAcc.max...Z" 
+
+| That's a job well done!
+
+  |===================================                                                                                           |  28%
+| We see X, Y, and Z (3 dimensions) of different aspects of body acceleration measurements, such as mean and standard deviation. Let's
+| do some comparisons of activities now by looking at plots of mean body acceleration in the X and Y directions. Call the function
+| myedit with the string "showXY.R" to see the code generating the plots. Make sure your cursor is back in the console window before
+| you hit any more buttons.
+
+> myEdit("showXY.R")
+Error in myEdit("showXY.R") : could not find function "myEdit"
+> myedit("showXY.R")
+
+| Keep up the great work!
+
+  |=====================================                                                                                         |  30%
+| You see both the code and its output! The plots are a little squished, but we see that the active activities related to walking
+| (shown in the two blues and magenta) show more variability than the passive activities (shown in black, red, and green), particularly
+| in the X dimension.
+
+...
+
+  |=======================================                                                                                       |  31%
+| The colors are a little hard to distinguish. Just for fun, call the function showMe (we used it in the Working_with_Colors lesson)
+| which displays color vectors. Use the vector 1:6 as its argument, and hopefully this will clarify the colors you see in the XY
+| comparison plot.
+
+> showMe(1:6)
+
+| You are doing so well!
+
+  |=========================================                                                                                     |  33%
+| Nice! We just wanted to show you the beauty and difference in colors. The colors at the bottom, black, red and green, mark the
+| passive activities, while the true blues and magenta near the top show the walking activities. Let's try clustering to see if we can
+| distinguish the activities more.
+
+...
+
+  |===========================================                                                                                   |  34%
+| We'll still focus on the 3 dimensions of mean acceleration. (The plot we just saw looked at the first 2 dimensions.) Create a
+| distance matrix, mdist, of the first 3 columns of sub1, by using the R command dist. Use the x[,1:3] notation to specify the columns.
+
+> mdist <- dist(sub1[,1:3])
+
+| All that hard work is paying off!
+
+  |=============================================                                                                                 |  36%
+| Now create the variable hclustering by calling the R command hclust and passing it mdist as an argument. This will use the Euclidean
+| distance as its default metric.
+
+> mdist
+               1            2            3            4            5            6            7            8            9           10
+2   0.0143701325                                                                                                                     
+3   0.0214126715 0.0105848702                                                                                                        
+              11           12           13           14           15           16           17           18           19           20
+2                                                                                                                                    
+3                                                                                                                                    
+              21           22           23           24           25           26           27           28           29           30
+2                                                                                                                                    
+3                                                                                                                                    
+              31           32           33           34           35           36           37           38           39           40
+2                                                                                                                                    
+3                                                                                                                                    
+              41           42           43           44           45           46           47           48           49           50
+2                                                                                                                                    
+3                                                                                                                                    
+              51           52           53           54           55           56           57           58           59           60
+2                                                                                                                                    
+3                                                                                                                                    
+              61           62           63           64           65           66           67           68           69           70
+2                                                                                                                                    
+3                                                                                                                                    
+              71           72           73           74           75           76           77           78           79           80
+2                                                                                                                                    
+3                                                                                                                                    
+              81           82           83           84           85           86           87           88           89           90
+2                                                                                                                                    
+3                                                                                                                                    
+              91           92           93           94           95           96           97           98           99          100
+2                                                                                                                                    
+3                                                                                                                                    
+             101          102          103          104          105          106          107          108          109          110
+2                                                                                                                                    
+3                                                                                                                                    
+             111          112          113          114          115          116          117          118          119          120
+2                                                                                                                                    
+3                                                                                                                                    
+             121          122          123          124          125          126          127          128          129          130
+2                                                                                                                                    
+3                                                                                                                                    
+             131          132          133          134          135          136          137          138          139          140
+2                                                                                                                                    
+3                                                                                                                                    
+             141          142          143          144          145          146          147          148          149          150
+2                                                                                                                                    
+3                                                                                                                                    
+             151          152          153          154          155          156          157          158          159          160
+2                                                                                                                                    
+3                                                                                                                                    
+             161          162          163          164          165          166          167          168          169          170
+2                                                                                                                                    
+3                                                                                                                                    
+             171          172          173          174          175          176          177          178          179          180
+2                                                                                                                                    
+3                                                                                                                                    
+             181          182          183          184          185          186          187          188          189          190
+2                                                                                                                                    
+3                                                                                                                                    
+             191          192          193          194          195          196          197          198          199          200
+2                                                                                                                                    
+3                                                                                                                                    
+             201          202          203          204          205          206          207          208          209          210
+2                                                                                                                                    
+3                                                                                                                                    
+             211          212          213          214          215          216          217          218          219          220
+2                                                                                                                                    
+3                                                                                                                                    
+             221          222          223          224          225          226          227          228          229          230
+2                                                                                                                                    
+3                                                                                                                                    
+             231          232          233          234          235          236          237          238          239          240
+2                                                                                                                                    
+3                                                                                                                                    
+             241          242          243          244          245          246          247          248          249          250
+2                                                                                                                                    
+3                                                                                                                                    
+             251          252          253          254          255          256          257          258          259          260
+2                                                                                                                                    
+3                                                                                                                                    
+             261          262          263          264          265          266          267          268          269          270
+2                                                                                                                                    
+3                                                                                                                                    
+             271          272          273          274          275          276          277          278          279          280
+2                                                                                                                                    
+3                                                                                                                                    
+             281          282          283          284          285          286          287          288          289          290
+2                                                                                                                                    
+3                                                                                                                                    
+             291          292          293          294          295          296          297          298          299          300
+2                                                                                                                                    
+3                                                                                                                                    
+             301          302          303          304          305          306          307          308          309          310
+2                                                                                                                                    
+3                                                                                                                                    
+             311          312          313          314          315          316          317          318          319          320
+2                                                                                                                                    
+3                                                                                                                                    
+             321          322          323          324          325          326          327          328          329          330
+2                                                                                                                                    
+3                                                                                                                                    
+             331          332          333          334          335          336          337          338          339          340
+2                                                                                                                                    
+3                                                                                                                                    
+             341          342          343          344          345          346
+2                                                                                
+3                                                                                
+ [ reached getOption("max.print") -- omitted 344 rows ]
+
+| You almost had it, but not quite. Try again. Or, type info() for more options.
+
+| Type hclustering <- hclust(mdist) the command prompt.
+
+> hclustering <- hclust(mdist)
+
+| That's correct!
+
+  |===============================================                                                                               |  38%
+| Now call the pretty plotting function (which we've already sourced) myplclust with 2 arguments. The first is hclustering, and the
+| second is the argument lab.col set equal to unclass(sub1$activity).
+
+> myplclust(hclustering,lab.col=unclass(sub1$activity))
+
+| You are amazing!
+
+  |=================================================                                                                             |  39%
+| Well that dendrogram doesn't look too helpful, does it? There's no clear grouping of colors, except that active colors (blues and
+| magenta) are near each other as are the passive (black, red, and green). So average acceleration doesn't tell us much. How about
+| maximum acceleration? Let's look at that for the first subject (in our array sub1) for the X and Y dimensions. These are in column 10
+| and 11.
+
+...
+
+  |===================================================                                                                           |  41%
+| Here they are plotted side by side, X dimension on the left and Y on the right. The x-axis of each show the 300+ observations and the
+| y-axis indicates the maximum acceleration.
+
+...
+
+  |=====================================================                                                                         |  42%
+| From the 2 plots, what separation, if any, do you see?
+
+1: passive activities generate the most acceleration
+2: there is no pattern
+3: passive activities mostly fall below the walking activities
+4: laying generates the most acceleration in the X dimension
+
+Selection: 3
+
+| Excellent work!
+
+  |=======================================================                                                                       |  44%
+| Finally we're seeing something vaguely interesting! Let's focus then on the 3 dimensions of maximum acceleration, stored in columns
+| 10 through 12 of sub1. Create a new distance matrix, mdist, of these 3 columns of sub1, by using the R command dist. Again, use the
+| x[,10:12] notation to catch the columns.
+
+> mdist<-dist(sub1[,10:12])
+
+| You are doing so well!
+
+  |=========================================================                                                                     |  45%
+| Now create the variable hclustering by calling hclust with mdist as the argument.
+
+> hclustering <- hclust(mdist)
+
+| You are amazing!
+
+  |===========================================================                                                                   |  47%
+| Again, call the myplclust with 2 arguments. The first is hclustering, and the second is the argument lab.col set equal to
+| unclass(sub1$activity).
+
+> myplclust(hclustering, lab.col=unclass(sub1$activity))
+
+| Perseverance, that's the answer.
+
+  |=============================================================                                                                 |  48%
+| Now we see clearly that the data splits into 2 clusters, active and passive activities. Moreover, the light blue (walking down) is
+| clearly distinct from the other walking activities. The dark blue (walking level) also seems to be somewhat clustered. The passive
+| activities, however, seem all jumbled together with no clear pattern visible.
+
+...
+
+  |===============================================================                                                               |  50%
+| Let's try some SVD now. Create the variable svd1 by assigning to it the output of a call to the R command svd. The argument to svd
+| should be scale(sub1[,-c(562,563)]). This will remove the last 2 columns from sub1 and scale the data. Recall that the last 2 columns
+| contain activity and subject information which we won't need.
+
+> svd1 <- svd(scale(sub1[,-c(562,563)]))
+
+| Great job!
+
+  |=================================================================                                                             |  52%
+| To see LEFT singular vectors of sub1, which component of svd1 would we examine?
+
+1: v
+2: u
+3: d
+4: x
+
+Selection: 2
+
+| Excellent job!
+
+  |===================================================================                                                           |  53%
+| Call the R command dim with svd1$u as an argument.
+
+> svd1$u
+               [,1]          [,2]          [,3]          [,4]          [,5]          [,6]          [,7]          [,8]          [,9]
+  [1,] -0.066141773  8.564579e-03 -1.393664e-02 -7.769934e-03  1.191165e-01 -0.0920423064  0.0058508372 -0.0550399765 -1.890710e-04
+  [2,] -0.061999938  8.370419e-03  1.657104e-02 -2.339682e-02  3.932328e-02 -0.0509798716 -0.0130735473  0.0121697418  3.375218e-02
+               [,10]         [,11]         [,12]         [,13]         [,14]         [,15]         [,16]         [,17]         [,18]
+  [1,]  9.344302e-02 -4.765556e-02  0.1086296241 -1.673493e-02  0.0421806995 -9.976497e-02  0.0238214484 -5.542122e-02  0.0361155923
+  [2,]  2.220486e-02  1.148087e-02 -0.0151936570  8.938191e-03 -0.0358580499  1.132084e-02 -0.0152495222 -3.733740e-02  0.0001711335
+               [,19]         [,20]         [,21]         [,22]         [,23]         [,24]         [,25]         [,26]         [,27]
+  [1,] -4.949759e-03  6.442071e-02 -6.694797e-02  1.043760e-01 -0.0302295408 -0.0307401199  5.987954e-02  1.023294e-01 -0.0024524423
+  [2,] -2.771532e-02  1.585173e-02  1.633869e-02 -6.080273e-03 -0.0181555901 -0.0244021003 -1.766137e-02 -3.873669e-02 -0.0425581853
+               [,28]         [,29]         [,30]         [,31]         [,32]         [,33]         [,34]         [,35]         [,36]
+  [1,] -0.0393862023  0.1009170485 -1.036426e-01  1.125469e-02 -0.0197955573  0.0141526094 -0.1782613765  0.0033751668 -0.0622902785
+  [2,]  0.0390538697  0.0835789165  3.037658e-02  6.628601e-02 -0.0038156780 -0.0067704698  0.0126846389  0.0854119995  0.0236976993
+               [,37]         [,38]         [,39]         [,40]         [,41]         [,42]         [,43]         [,44]         [,45]
+  [1,]  0.0601870410 -0.0060965801  0.0179998430 -0.0526163361  9.641063e-02 -0.1449440064  2.234590e-02 -0.1510466006  0.0799818388
+  [2,]  0.0479813720 -0.0003843763  0.0222372561 -0.0400619648 -3.043017e-02 -0.0788106363 -7.128262e-02 -0.1152295760 -0.0357102926
+               [,46]         [,47]         [,48]         [,49]         [,50]         [,51]         [,52]         [,53]         [,54]
+  [1,] -5.799649e-02  8.733776e-02 -1.381932e-01  0.0684309298 -0.1187206019 -0.0039825070  0.1042020050 -1.070406e-01  6.577633e-03
+  [2,]  8.633961e-05 -9.008976e-02 -3.470545e-02 -0.0065303532  0.0119772828 -0.0790353249 -0.0271238938  1.793258e-02  6.775098e-02
+               [,55]         [,56]         [,57]         [,58]         [,59]         [,60]         [,61]         [,62]         [,63]
+  [1,]  1.236647e-01 -2.590228e-02 -5.633621e-02  4.253215e-02  0.0876232700  0.0559384414 -0.1020566910 -1.347105e-01  0.0356052450
+  [2,]  1.338396e-02 -1.164491e-01 -8.869666e-02  8.250773e-02  0.0148264483 -0.0287740517  0.0005820008  7.563743e-02  0.0262384010
+               [,64]         [,65]         [,66]         [,67]         [,68]         [,69]         [,70]         [,71]         [,72]
+  [1,]  0.0148819195 -6.105154e-05 -0.1127014625  0.0385010373  9.381311e-02  9.823079e-02 -1.079981e-01  8.786604e-03  0.0879799108
+  [2,] -0.0569140424  1.251190e-01  0.0338647502 -0.0267881737 -1.678635e-02  1.064845e-01 -6.691319e-02 -3.083815e-02  0.1010605767
+               [,73]         [,74]         [,75]         [,76]         [,77]         [,78]         [,79]         [,80]         [,81]
+  [1,] -1.942189e-01 -0.0569878905 -1.587779e-03 -0.0129757943 -0.0946978893  0.0198511063  3.932363e-02 -3.605995e-03 -0.0005602653
+  [2,]  1.262543e-02  0.0426284320 -3.824097e-02  0.0449394674  0.0032896806  0.0022171546  6.560203e-02 -2.553141e-02 -0.0160021577
+               [,82]         [,83]         [,84]         [,85]         [,86]         [,87]         [,88]         [,89]         [,90]
+  [1,] -7.848700e-02 -0.0043837340  0.0681283346  0.0970117276  0.0364168333 -4.088264e-02 -6.752335e-02 -0.1151227773 -0.0233393587
+  [2,]  3.988558e-02  0.0466018441  0.0665209357  0.0191771219 -0.0654607914 -3.800030e-02 -3.557995e-02  0.0170214276 -0.0874965490
+               [,91]         [,92]         [,93]         [,94]         [,95]         [,96]         [,97]         [,98]         [,99]
+  [1,]  9.328879e-02  0.0819347449  0.0276731878 -0.0266610981  9.503777e-02 -0.0853167513  0.0862292702 -0.0493371193  3.826705e-02
+  [2,]  7.802605e-02  0.0981158992 -0.0454380077  0.0719265493  6.489875e-02  0.0340303280 -0.0252580933 -0.0741039453  6.325405e-03
+              [,100]        [,101]        [,102]        [,103]        [,104]        [,105]        [,106]        [,107]        [,108]
+  [1,] -0.0358642859  0.0269412948 -0.0720979447  9.808335e-02 -0.0820066520  0.0296343740 -0.0063279827  0.0189690095 -0.0333073705
+  [2,]  0.0118576773 -0.0251623544 -0.1829934014 -4.465097e-02 -0.0461460329  0.0547364074  0.0140720385  0.0419951993  0.0513240670
+              [,109]        [,110]        [,111]        [,112]        [,113]        [,114]        [,115]        [,116]        [,117]
+  [1,]  0.0523016438 -0.0740250158  0.0212201428 -0.0460193786  0.0404057571 -0.0418812771  7.679140e-02 -0.0740918099  1.827791e-02
+  [2,]  0.0942857123 -0.0316580747 -0.0756505541  0.0635904660  0.0063750260 -0.0284407064  5.394297e-02 -0.0959688646  6.118701e-02
+              [,118]        [,119]        [,120]        [,121]        [,122]        [,123]        [,124]        [,125]        [,126]
+  [1,] -0.0420544227  0.0049178768 -0.0982943789  0.0240409122  7.023623e-02 -0.0064615829  1.266428e-01 -0.0277994401 -0.0435134928
+  [2,] -0.0031658012  0.0717386564  0.0407275307  0.0161573244 -7.918322e-02  0.0667989787  1.593297e-03 -0.0862703795 -0.0478002749
+              [,127]        [,128]        [,129]        [,130]        [,131]        [,132]        [,133]        [,134]        [,135]
+  [1,]  0.0192787894  0.0279592198 -4.674594e-02  0.0161496726 -0.0395432185  0.0402172518  3.039780e-02 -0.0886263211  0.0397551405
+  [2,]  0.1087379882  0.1450555488  2.188809e-02  0.0787262933 -0.0709801686 -0.0526334981 -8.716503e-03  0.0330629545 -0.1306705397
+              [,136]        [,137]        [,138]        [,139]        [,140]       [,141]        [,142]        [,143]        [,144]
+  [1,]  0.0169141500 -0.1059894568  1.439969e-02  0.0101992328 -2.482790e-02 -0.003400431  0.0583945621  0.0639518453 -1.889392e-02
+  [2,] -0.0196792231 -0.0114069667  1.916146e-02  0.0227092745 -4.984443e-02 -0.007573186  0.0413705926  0.0144824210 -4.116125e-02
+              [,145]        [,146]        [,147]        [,148]        [,149]        [,150]        [,151]        [,152]        [,153]
+  [1,] -0.0370106960  0.0449259307 -0.0904839779 -0.0421606305  0.0352833512  2.236773e-02 -4.346432e-02  0.0938627021 -0.0117509517
+  [2,]  0.0114040509  0.0083392708  0.0321390610 -0.0282193453 -0.0224988316  1.043652e-01 -5.311802e-02 -0.0096083080 -0.0559027857
+              [,154]        [,155]        [,156]        [,157]        [,158]        [,159]        [,160]        [,161]        [,162]
+  [1,] -0.0035890565 -1.923092e-02 -3.497202e-02  6.973584e-02  0.0223720742 -0.0727262515  0.0286862206  4.062570e-02 -0.0109079928
+  [2,] -0.0693556840 -8.855491e-02 -6.959170e-02 -2.196426e-02  0.0048343018 -0.0081720302 -0.0335008506 -3.890533e-02  0.0954233701
+              [,163]        [,164]        [,165]        [,166]        [,167]        [,168]        [,169]        [,170]        [,171]
+  [1,] -0.0054077096 -0.0318257531  2.251271e-02  0.0704761084 -3.854590e-02 -0.0309291081 -3.515527e-02  0.0200519645  3.980497e-02
+  [2,]  0.0235289967  0.0366415478  5.855450e-02  0.0192410726  5.058203e-02 -0.0613591871 -2.781745e-02 -0.0915167212 -5.528008e-02
+              [,172]        [,173]        [,174]        [,175]        [,176]        [,177]        [,178]        [,179]        [,180]
+  [1,]  3.802068e-02 -5.811083e-02 -4.874210e-02 -2.666841e-02  9.626690e-02  0.0193680434 -0.0252955478 -0.0421204014 -3.288365e-02
+  [2,] -8.693300e-02  7.483432e-02 -8.197475e-02 -1.795787e-04  3.270201e-02 -0.0377461822 -0.0072552624 -0.0146536903  2.274699e-02
+              [,181]        [,182]        [,183]        [,184]        [,185]        [,186]        [,187]        [,188]        [,189]
+  [1,]  0.0006502023  0.0151870270  0.0284576682  2.144477e-03  0.0581850421 -0.0154467891 -0.0119105123 -5.101888e-02 -0.0608487470
+  [2,]  0.0027489793 -0.0003873317 -0.0959415476  7.812537e-02 -0.1020514723 -0.0834409130 -0.0255620177 -3.846376e-02  0.0245095261
+              [,190]        [,191]        [,192]        [,193]        [,194]        [,195]        [,196]        [,197]        [,198]
+  [1,]  0.0484343457  0.0112052201  5.551034e-02  0.0059324373 -0.0482185334 -5.109476e-02 -3.224101e-02  0.0585210620  0.0239084845
+  [2,] -0.0426168613 -0.0404560303 -5.169024e-02  0.0471779702  0.0220310919  8.457444e-02  2.763795e-02  0.0011336902  0.0070762283
+              [,199]        [,200]        [,201]        [,202]        [,203]        [,204]        [,205]        [,206]        [,207]
+  [1,]  0.0417179105 -0.0234040321 -0.0110734959 -0.0224266569 -0.0108336869 -3.048244e-02  1.688638e-02  0.0385309993  0.0844593447
+  [2,] -0.0273019551 -0.0686394770  0.0760808060  0.0397222462  0.0125061815  1.787366e-02 -4.410086e-02  0.0654656623 -0.0331762594
+              [,208]        [,209]        [,210]        [,211]        [,212]        [,213]        [,214]        [,215]        [,216]
+  [1,] -0.0560816373 -0.0134171629 -0.0087200069 -2.508522e-02 -1.250536e-02 -0.0442253120 -0.0121089364  0.0014873208  6.318386e-03
+  [2,]  0.1022777390  0.0102288935  0.0114501310 -5.013661e-02  5.598947e-02 -0.0171826363  0.0297386068 -0.0120160464 -6.833115e-02
+              [,217]        [,218]        [,219]        [,220]        [,221]        [,222]        [,223]        [,224]        [,225]
+  [1,]  5.295663e-02  3.237805e-02  3.462201e-02 -0.0651461444 -5.386029e-02 -0.0397851500 -0.0098472367 -0.0507552849  1.819840e-03
+  [2,]  1.266533e-02  9.351030e-02 -7.592688e-02  0.0169503267  4.229263e-02 -0.0068526771 -0.0073982737 -0.0122708562  3.993415e-02
+              [,226]        [,227]        [,228]        [,229]        [,230]        [,231]        [,232]        [,233]        [,234]
+  [1,]  0.0060844814  0.0329176396  9.190029e-03  0.0301699945  0.0324196541  0.0623167223 -8.679210e-02 -0.0219357324 -0.0556609510
+  [2,] -0.0204782751 -0.0621881417 -1.533293e-02  0.0396429096 -0.0035919745 -0.0575012885 -1.248388e-02 -0.0054350196  0.0548116287
+              [,235]        [,236]        [,237]        [,238]        [,239]        [,240]        [,241]        [,242]        [,243]
+  [1,] -0.0432510044 -0.0783956399  0.0303953002  4.722433e-03  3.968764e-02  1.018368e-02  0.0167076198  1.466183e-02  0.0600420477
+  [2,] -0.0182150248  0.0770438090 -0.0507753176  4.903687e-03 -4.999664e-02  9.809225e-02 -0.0503726027 -2.058827e-02 -0.0199220866
+              [,244]        [,245]        [,246]        [,247]        [,248]        [,249]        [,250]        [,251]        [,252]
+  [1,]  1.938499e-02 -0.0458368251 -7.253089e-02 -0.0165328345 -0.0415000254 -0.0294814210 -4.770543e-02 -0.0159122371 -0.0282374339
+  [2,] -4.895832e-02  0.0056270855  4.486431e-02 -0.1265170115 -0.0177617864  0.0687811530  5.485940e-02 -0.0111079070 -0.0712792669
+              [,253]        [,254]        [,255]        [,256]        [,257]        [,258]        [,259]       [,260]        [,261]
+  [1,] -6.326447e-02  0.0428449842  0.0889964643  6.601480e-02  0.0082051642  0.0634580862  3.838575e-02 -0.011027736 -0.0381021335
+  [2,]  2.960669e-02 -0.1036028294  0.0694960658 -1.718524e-02 -0.0140738181 -0.0184631554 -5.140597e-03  0.061813203  0.0152910574
+              [,262]        [,263]        [,264]        [,265]        [,266]        [,267]        [,268]        [,269]        [,270]
+  [1,] -0.0552905081 -0.0008011696 -0.0147882446 -0.0926137778 -0.0370094404 -2.570754e-02  5.298281e-02  5.035592e-02  0.0680001765
+  [2,]  0.0133543406 -0.0055174084  0.0699178026  0.0364320323 -0.0791149064  4.469284e-02 -3.348862e-02  4.302892e-02  0.0099110060
+              [,271]        [,272]        [,273]        [,274]        [,275]        [,276]        [,277]        [,278]        [,279]
+  [1,]  0.0097692363  0.0036558892  1.523933e-02  5.386477e-02  0.0192766618  1.798282e-02  0.0555790171 -0.0030231460 -0.0247738323
+  [2,] -0.0044721740  0.0132797918 -2.833227e-02  6.474753e-03 -0.0329367159 -4.025914e-02  0.0128336245 -0.0463973309  0.0543965020
+              [,280]        [,281]        [,282]        [,283]        [,284]        [,285]        [,286]        [,287]        [,288]
+  [1,] -8.444564e-03 -0.0302838026 -2.181537e-02 -2.913907e-02 -0.0079178791 -0.0378803509 -4.900972e-03 -0.0020382041 -0.0011950189
+  [2,]  5.572958e-02  0.0074785604  7.770844e-02  1.211295e-01 -0.0412577787  0.0036897743 -4.688145e-02 -0.1068003224 -0.0186265057
+              [,289]        [,290]        [,291]        [,292]        [,293]        [,294]        [,295]        [,296]        [,297]
+  [1,] -0.0090430323 -0.0581954269  0.0300280723  0.0069934645  0.0318801740  0.0337596273  0.0095383095  0.0208142949  3.382017e-02
+  [2,]  0.0379390567  0.0569059754 -0.0108219267 -0.0184046362  0.0771430257  0.0059530317 -0.1060137500  0.0081464693 -9.031400e-02
+              [,298]        [,299]        [,300]        [,301]        [,302]        [,303]        [,304]        [,305]        [,306]
+  [1,]  7.003915e-03  0.0555764571  0.0394915411  6.625359e-02  1.085308e-02 -1.719435e-02 -3.853694e-02 -1.404781e-02 -0.0226431420
+  [2,]  8.712865e-02  0.0092446946 -0.0755398557 -9.559116e-02 -3.371267e-02 -3.264285e-02  2.873573e-02 -8.332155e-03 -0.0029654249
+              [,307]        [,308]        [,309]        [,310]        [,311]        [,312]        [,313]        [,314]        [,315]
+  [1,] -5.517611e-02 -3.215406e-02 -1.780819e-02 -0.0349373155 -0.0351831451 -2.183001e-02 -2.531497e-02 -1.326979e-02 -0.0150441729
+  [2,]  1.356247e-01  4.354504e-02  7.799262e-02  0.0267935954  0.0055006065 -1.165282e-01 -6.353065e-02  1.649754e-02 -0.0184555967
+              [,316]        [,317]        [,318]        [,319]        [,320]        [,321]        [,322]        [,323]        [,324]
+  [1,] -3.145309e-02 -0.0359001090 -0.0408962094  0.0148677850  2.119056e-02  1.405699e-02  0.0642264327  0.0389359165  7.577053e-02
+  [2,] -9.673285e-02  0.0228253901  0.0142776559  0.0591938306  5.136672e-02  8.954691e-02 -0.0242870622 -0.1477028618  1.188568e-03
+              [,325]        [,326]        [,327]        [,328]        [,329]        [,330]        [,331]        [,332]        [,333]
+  [1,]  3.233514e-02  5.565503e-02  0.0110636823  0.0129130443  3.249411e-02  0.0607921837  0.0644263066  0.0206511068 -0.0333238944
+  [2,] -1.489842e-02 -6.502969e-02 -0.0107329993 -0.0388732228 -1.246796e-03 -0.0046408584 -0.0160364833  0.0349747993 -0.0875206379
+              [,334]        [,335]        [,336]        [,337]        [,338]        [,339]        [,340]        [,341]        [,342]
+  [1,] -1.404675e-02 -0.0210533409 -2.990473e-02 -0.0717556502 -0.0470628298 -2.996988e-03 -0.0089803581 -1.998380e-02 -7.039642e-03
+  [2,]  1.113523e-01  0.0451867730  5.177245e-03  0.0190823182  0.0043546748 -1.837772e-02  0.0105644909  1.528621e-02  1.019535e-01
+              [,343]        [,344]        [,345]        [,346]      [,347]
+  [1,] -0.0004448515 -0.0116604395 -2.123299e-02 -0.0655701239 -0.05368281
+  [2,] -0.0128646026 -0.0160397295  1.512508e-02  0.0896732985 -0.05368281
+ [ reached getOption("max.print") -- omitted 345 rows ]
+
+| That's not exactly what I'm looking for. Try again. Or, type info() for more options.
+
+| Type dim(svd1$u) at the command prompt.
+
+> dim(svd1$u)
+[1] 347 347
+
+| Excellent work!
+
+  |=====================================================================                                                         |  55%
+| We see that the u matrix is a 347 by 347 matrix. Each row in u corresponds to a row in the matrix sub1. Recall that in sub1 each row
+| has an associated activity.
+
+...
+
+  |=======================================================================                                                       |  56%
+| Here we're looking at the 2 left singular vectors of svd1 (the first 2 columns of svd1$u). Each entry of the columns belongs to a
+| particular row with one of the 6 activities assigned to it. We see the activities distinguished by color. Moving from left to right,
+| the first section of rows are green (standing), the second red (sitting), the third black (laying), etc.  The first column of u shows
+| separation of the nonmoving (black, red, and green) from the walking activities. The second column is harder to interpret. However,
+| the magenta cluster, which represents walking up, seems separate from the others.
+
+...
+
+  |=========================================================================                                                     |  58%
+| We'll try to figure out why that is. To do that we'll have to find which of the 500+ measurements (represented by the columns of
+| sub1) contributes to the variation of that component. Since we're interested in sub1 columns, we'll look at the RIGHT singular
+| vectors (the columns of svd1$v), and in particular, the second one since the separation of the magenta cluster stood out in the
+| second column of svd1$u.
+
+...
+
+  |===========================================================================                                                   |  59%
+| Here's a plot of the second column of svd1$v. We used transparency in our plotting but nothing clearly stands out here. Let's use
+| clustering to find the feature (out of the 500+) which contributes the most to the variation of this second column of svd1$v.
+
+...
+
+  |=============================================================================                                                 |  61%
+| Create the variable maxCon by assigning to it the output of the R command which.max using the second column of svd1$v as an argument.
+
+> maxCon <- svd1$v[,2]
+
+| That's not exactly what I'm looking for. Try again. Or, type info() for more options.
+
+| Type maxCon <- which.max(svd1$v[,2]) at the command prompt.
+
+> maxCon <- which.max(svd1$v[,2])
+
+| Excellent job!
+
+  |===============================================================================                                               |  62%
+| Now create a distance matrix mdist by assigning to it the output of the R command dist using 4 columns of sub1 as the arguments.
+| These 4 columns are 10 through 12 (10:12) and maxCon. Recall that you'll have to concatenate these 2 column expressions when
+| specifying them.
+
+> mdist <- dist(c(sub1[,10:12],maxCon))
+Error in dist(c(sub1[, 10:12], maxCon)) : 
+  'list' object cannot be coerced to type 'double'
+> maxCon
+[1] 296
+
+| Not quite, but you're learning! Try again. Or, type info() for more options.
+
+| Type mdist <- dist(sub1[,c(10:12,maxCon)]) at the command prompt.
+
+> mdist <- dist(c(sub1[,c(10:12,maxCon)]))
+Error in dist(c(sub1[, c(10:12, maxCon)])) : 
+  'list' object cannot be coerced to type 'double'
+> mdist <- dist(sub1[,c(10:12,maxCon)])
+
+| Excellent job!
+
+  |=================================================================================                                             |  64%
+| Now create hclustering, the output of the R command hclust using mdist as the argument.
+
+> hclustering <- hclust(mdist)
+
+| You are amazing!
+
+  |===================================================================================                                           |  66%
+| Call the myplclust with 2 arguments, hclustering, and lab.col set equal to unclass(sub1$activity).
+
+> myplclust(hclustering, lab.col=unclass(sub1$activity))
+
+| Excellent job!
+
+  |=====================================================================================                                         |  67%
+| Now we see some real separation. Magenta (walking up) is on the far left, and the two other walking activities, the two blues, are on
+| the far right, but in separate clusters from one another. The nonmoving activities still are jumbled together.
+
+...
+
+  |=======================================================================================                                       |  69%
+| Run the R command names with the argument sub1[maxCon] to see what measurement is associated with this maximum contributor.
+
+> names(sub1[maxCon])
+[1] "fBodyAcc.meanFreq...Z"
+
+| You are amazing!
+
+  |=========================================================================================                                     |  70%
+| So the mean body acceleration in the frequency domain in the Z direction is the main contributor to this clustering phenomenon we're
+| seeing. Let's move on to k-means clustering to see if this technique can distinguish between the activities.
+
+...
+
+  |===========================================================================================                                   |  72%
+| Create the variable kClust by assigning to it the output of the R command kmeans with 2 arguments. The first is sub1 with the last 2
+| columns removed. (Recall these don't have pertinent information for clustering analysis.) The second argument to kmeans is centers
+| set equal to 6, the number of activities we know we have.
+
+> kClust <- kmeans(sub1[,-c(562,563)]),centers=6)
+Error: unexpected ',' in "kClust <- kmeans(sub1[,-c(562,563)]),"
+> kClust <- kmeans(sub1[,-c(562,563)],centers=6)
+
+| Keep up the great work!
+
+  |=============================================================================================                                 |  73%
+| Recall that without specifying coordinates for the cluster centroids (as we did), kmeans will generate starting points randomly. Here
+| we did only 1 random start (the default). To see the output, run the R command table with 2 arguments. The first is kClust$cluster
+| (part of the output from kmeans), and the second is sub1$activity.
+
+> table(kClust$cluster,sub1$activity)
+   
+    laying sitting standing walk walkdown walkup
+  1     18      10        2    0        0      0
+  2      0       0        0   95        0      0
+  3      0      37       51    0        0      0
+  4      0       0        0    0       49      0
+  5      3       0        0    0        0     53
+  6     29       0        0    0        0      0
+
+| Excellent work!
+
+  |==============================================================================================                                |  75%
+| Your exact output will depend on the state of your random number generator. We notice that when we just run with 1 random start, the
+| clusters tend to group the nonmoving activities together in one cluster. The walking activities seem to cluster individually by
+| themselves. You could run the call to kmeans with one random start again and you'll probably get a slightly different result, but....
+
+...
+
+  |================================================================================================                              |  77%
+| ... instead call kmeans with 3 arguments, the last of which will tell it to try more random starts and return the best one. The first
+| 2 arguments should be the same as before (sub1 with the last 2 columns removed and centers set equal to 6). The third is nstart set
+| equal to 100. Put the result in kClust again.
+
+> kClust <- kmeans(sub1[,-c(562,563)],centers=6,nstart = 100)
+
+| All that hard work is paying off!
+
+  |==================================================================================================                            |  78%
+| Again, run the R command table with 2 arguments. The first is kClust$cluster (part of the output from kmeans), and the second is
+| sub1$activity.
+
+> table(kClust$cluster,sub1$activity)
+   
+    laying sitting standing walk walkdown walkup
+  1      3       0        0    0        0     53
+  2     29       0        0    0        0      0
+  3     18      10        2    0        0      0
+  4      0      37       51    0        0      0
+  5      0       0        0    0       49      0
+  6      0       0        0   95        0      0
+
+| Excellent job!
+
+  |====================================================================================================                          |  80%
+| We see that even with 100 random starts, the passive activities tend to cluster together. One of the clusters contains only laying,
+| but in another cluster, standing and sitting group together.
+
+...
+
+  |======================================================================================================                        |  81%
+| Use dim to find the dimensions of kClust's centers. Use the x$y notation to access them.
+
+> dim(kClust)
+NULL
+
+| You're close...I can feel it! Try it again. Or, type info() for more options.
+
+| Type dim(kClust$centers) the command prompt.
+
+> dim(kClust$centers)
+[1]   6 561
+
+| You got it right!
+
+  |========================================================================================================                      |  83%
+| So the centers are a 6 by 561 array. Sometimes it's a good idea to look at the features (columns) of these centers to see if any
+| dominate.
+
+...
+
+  |==========================================================================================================                    |  84%
+| Create the variable laying and assign to it the output of the call to the R command which with the argument kClust$size==29.
+
+> laying <- which(kClust$size==29)
+
+| That's the answer I was looking for.
+
+  |============================================================================================================                  |  86%
+| Now call plot with 3 arguments. The first is kClust$centers[laying,1:12], and the second is pch set to 19. The third is ylab set
+| equal to "Laying Cluster"
+
+> plot(kClust$centers[laying,1:12],pch=19,ylab="Laying Cluster")
+
+| That's correct!
+
+  |==============================================================================================================                |  88%
+| We see the first 3 columns dominate this cluster center. Run names with the first 3 columns of sub1 as the argument to remind
+| yourself of what these columns contain.
+
+> names(sub1[,1:3])
+[1] "tBodyAcc.mean...X" "tBodyAcc.mean...Y" "tBodyAcc.mean...Z"
+
+| You got it right!
+
+  |================================================================================================================              |  89%
+| So the 3 directions of mean body acceleration seem to have the biggest effect on laying.
+
+...
+
+  |==================================================================================================================            |  91%
+| Create the variable walkdown and assign to it the output of the call to the R command which with the argument kClust$size==49.
+
+> walkdown <- which(kClust$size==49)
+
+| That's a job well done!
+
+  |====================================================================================================================          |  92%
+| Now call plot with 3 arguments. The first is kClust$centers[walkdown,1:12], and the second is pch set to 19. The third is ylab set
+| equal to "Walkdown Cluster"
+
+> plot(kClust$centers[walkdown,1:12],pch=19,ylab="Walkdown Cluster")
+
+| That's the answer I was looking for.
+
+  |======================================================================================================================        |  94%
+| We see an interesting pattern here. From left to right, looking at the 12 acceleration measurements in groups of 3, the points
+| decrease in value. The X direction dominates, followed by Y then Z. This might tell us something more about the walking down
+| activity.
+
+...
+
+  |========================================================================================================================      |  95%
+| We'll wrap up here and hope this example convinced you that real world analysis can be frustrating sometimes and not always obvious.
+| You might have to try several techniques of exploratory data analysis before you hit one that pays off and leads you to the questioms
+| that will be the most promising to explore.
+
+...
+
+  |==========================================================================================================================    |  97%
+| We saw here that the sensor measurements were pretty good at discriminating between the 3 walking activities, but the passive
+| activities were harder to distinguish from one another. These might require more analysis or an entirely different set of sensory
+| measurements.
+
+...
+
+  |============================================================================================================================  |  98%
+| Congratulations! We hope you enjoyed the 6 activities and 500+ features of this lesson.
+
+...
+
+  |==============================================================================================================================| 100%
+| Would you like to receive credit for completing this course on Coursera.org?
