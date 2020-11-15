@@ -1,0 +1,124 @@
+---
+title: "Motor Trends Magazine - Impact of Transmission on MPG"
+author: "Mark Wan"
+date: "11/14/2020"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen=999)
+library(ggplot2)
+library(GGally)
+library(dplyr)
+library(corrplot)
+library(RColorBrewer)
+
+```
+
+## **Executive Summary**
+***
+This report presents an analysis of the impact of transmission type on fuel efficiency. Specifically, this report addresses the questions,
+
+1. Does fuel efficiency, measured in terms of miles per gallon (MPG) differ between vehicles with auto transmission compared to vehicles with manual transmission?
+
+2. If so, what is the difference in MPG?
+
+### **Load Data**
+***
+```{r Load Data}
+data(mtcars)
+mtcars2 <- mtcars
+```
+
+### **Data Exploration**
+***
+Appendix C presents a summary of the data.
+
+The correlation matrix below indicate that numerous variables in the data set are correlated together. This observation is backed up by the paired plots (Appendix A) which lack randomness in many of the paired plots. This result suggests possible bias when examining regressors in isolation. Furthermore, the data shows that transmission (column "am") is highly correlated with drat, wt and gear. Hence, one should be careful to avoid regressing mpg vs am in isolation.
+```{r correlations, out.width = '40%'}
+mtcars2.cor <- cor(mtcars2)
+corrplot(mtcars2.cor, main="MPG Correlation Matrix")
+```
+
+In addition, the correlation maatrix of mpg vs all regressors suggests that transmission may not be the only driver for mpg.
+```{r mpg correlations}
+cor(mtcars2$mpg,mtcars2[,-1])
+```
+
+The code below coverts transmission and engine shape in factor variables. This conversion is required for regression analysis.
+```{r Clean Data}
+fac_var <- c(8,9)
+mtcars2[,fac_var] <- lapply(mtcars2[,fac_var],as.factor)
+levels(mtcars2$am) <- c("Automatic", "Manual")
+levels(mtcars2$vs) <- c("vshape", "straight")
+```
+
+The plot below indicates an increase in mpg moving from auto to manual cars. However, this observation needs to be validated with consideration to other regressors. 
+```{r boxplots, out.width = '40%'}
+g <- ggplot(mtcars2,aes(x=am,y=mpg)) + geom_boxplot(fill=c('blue','red')) + 
+  labs(x="Transmission",y="MPG",
+       title="MPG Vs Transmission") + 
+  theme(plot.title = element_text(hjust = 0.5))
+g
+```
+
+### **Results**
+***
+```{r mpg vs Transmission}
+fit1 <- lm(mpg~am,data=mtcars2)
+summary(fit1)
+```
+The regression of mpg vs transmission (above) indicates an increase of 7.245 in mpg moving from auto to manual. The p-value of `r summary(fit1)$coef[2,4]` is also less than 0.05 significance level, indicating that the difference is signifcant. But how much of that difference can really be attributed to transmission? The following section attempts to answer that question.
+
+```{r ttest}
+ttest <- t.test(mtcars2$mpg~mtcars2$am,conf.level = 0.95)
+ttest
+```
+The t-test above shows that the p-value (`r ttest$p.value`) for difference in mean mpg for auto and manual vehicles is less than 0.05 significance level. Hence, the difference in mean mpg between auto and manual vehicles is significant and reinforces the point made in the previous regression analysis.
+
+```{r mpg vs all variables}
+fit_all <- lm(mpg~.,data=mtcars2)
+summary(fit_all)
+```
+Interestingly, the regression of mpg against all variables (above) shows that the difference in mpg as a result of transmission (holding other regressors constant) is now insignificant. Though note that using all variables may not be appropriate if the variables are not all orthogonal (independent). In this case, the model may be overfitted with an excessive number of regressors, reducing the number of degrees of freedom that the model is allowed to arrive at the optimum solution.
+
+```{r optimum model}
+fit_optimum <- step(lm(mpg~.,data=mtcars2),trace=0)
+summary(fit_optimum)
+```
+Using the step function to select the optimum model (bias vs variance), the optimum model shows that mpg is not only related to transmission but also to weight and qsec. Specifically, the model indicates that 1) a 1000lbs increase in wt results in a `r summary(fit_optimum)$coef[2,1]` increase in mpg, 2) a 1 sec increase in 1/4 mile time results in a `r summary(fit_optimum)$coef[3,1]` increase in mpg, and 3) shifting from auto to manual results in a `r summary(fit_optimum)$coef[4,1]`, with an error of `r summary(fit_optimum)$coef[4,2]`, increase in mpg (holding other regressors constant). In addition, these differences are all significant as indicated by the p-values (< 0.05 significance level).
+
+```{r residuals normality}
+shapiro.test(fit_optimum$residuals)
+```
+Finally, the P-value from a Shapiro-Wilk normality test is greater than 0.05, indicating that the assumption of normal residuals is reasonable (for a 0.05 significance level). 
+
+Residual and normal QQ plots in Appendix B also supports this assertion.
+
+## **Conclusion**
+In conclusion, the results of the multi-variable regression indicate that transmission does have an impact on mpg; manual cars do have, on average, higher mpg. However, in order to estimate the absolute mpg values, weight and 1/4 mile times must also be considered.
+
+
+## **Appendix A - Paired Plots**
+***
+```{r paired plots, out.width = '40%'}
+pairs(mtcars2)
+```
+
+
+## **Appendix B - Residual Plots**
+***
+```{r plot residuals}
+par(mfrow=c(2,2))
+plot(fit_optimum)
+```
+
+## **Appendix C - Summary of mtcars**
+***
+```{r Data Summary}
+summary(mtcars2)
+```

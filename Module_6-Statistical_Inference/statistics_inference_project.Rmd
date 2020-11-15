@@ -1,0 +1,167 @@
+---
+title: "Statistical Inference Course Project"
+author: "Mark Wan"
+date: "11/14/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# **Overview**
+***
+This report consists of 2 parts. The first part explores the CLT theorem with the exponential distribution. The second part conducts an inferential analysis on the ToothGrowth dataset.
+
+# **Part 1: Simulations**
+***
+## **1. Show the sample mean and compare it to the theoretical mean of the distribution.**
+
+The following R code produces 1000 sets of 40 values generated from an exponential distribution with
+lambda=0.2. The code then generates a histogram of sample means and labels the actual mean against the
+theoretical mean for a direct comparison.
+
+```{r distribution}
+# Set reproducibility
+set.seed(2020)
+lambda <- 0.2
+mu_theo <- 1/lambda
+s <- 1/lambda
+n <- 40
+mns = NULL
+for (i in 1 : 1000) mns = c(mns, mean(rexp(n,lambda)))
+hist(mns,main="Actual vs Theoretical Mean", xlab="Sample Mean",breaks=40)
+abline(v=mean(mns),col="red",lwd=3)
+abline(v=mu_theo,col="blue",lwd=3,lty=2)
+legend("topright", legend=c("Actual Mean", "Theoretical Mean"),
+col=c("red", "blue"), lty=1:2, cex=0.8)
+```
+
+The graph above shows that the theoretical mean, 5 is a very good estimate of the actual mean 5.0339482.
+
+## **2. Show how variable the sample is (via variance) and compare it to the theoretical variance**
+of the distribution.
+The code below does a simple calculation to calculate the theoretical variances vs actual variances.
+```{r variances}
+var_sample <- var(mns)
+var_theo <- s^2/n
+```
+
+Attribute | Value
+----------|-----------
+Theoretical Variance | `r var_theo`
+Actual Variance | `r var_sample`
+Theoretical Standard Deviation | `r sqrt(var_theo)`
+Actual Standard Deviation | `r sqrt(var_sample)`
+
+The table above shows again that the theoretical variance and standard deviation are good estimators of the
+actual values.
+
+## **3. Show that the distribution is approximately normal.**
+The following R code compares the actual sample mean distribution to the normal distribution.
+```{r actual vs theoretical distribution}
+hist(mns,prob=TRUE,main="Actual vs Theoretical Mean", xlab="Sample Mean",breaks=40)
+lines(density(mns), lwd=3, col="red")
+x <- seq(min(mns), max(mns), length=2*n)
+y <- dnorm(x, mean=1/lambda, sd=sqrt(((1/lambda)/sqrt(n))^2))
+lines(x, y, pch=22, col="blue", lwd=2, lty = 2)
+legend("topright", legend=c("Actual Density", "Normal Density"),
+col=c("red", "blue"), lty=1:2, cex=0.8)
+```
+The graph above shows sample mean distribution can be very closely approximated wiht a normal distribution.
+
+# **Part 2: Basic Inferential Data Analysis**
+***
+The following R code loads the ToothGrowth dataset and executes a basic exploratory analysis of the data.
+## **1. Load the ToothGrowth data and perform some basic exploratory data analyses**
+```{r exploratory analysis}
+data("ToothGrowth")
+summary(ToothGrowth)
+```
+
+```{r exploratory analysis - head}
+head(ToothGrowth)
+```
+
+```{r exploratory analysis - unique names}
+for (name in names(ToothGrowth)){
+print(name)
+print(unique(ToothGrowth[,name]))
+print("")
+}
+```
+
+```{r factor dose}
+ToothGrowth$dose <- as.factor(ToothGrowth$dose)
+```
+
+## **2. Provide a basic summary of the data.**
+The following code chunk uses ggplot to produce facet plots
+of tooth length vs dose for each supplementary delivery, and of tooth length vs supplmentary delivery for
+each dose level.
+```{r facet boxplots - supp}
+library(ggplot2)
+library(RColorBrewer)
+g <- ggplot(ToothGrowth,aes(x=dose,y=len)) +
+  geom_boxplot(fill=brewer.pal(length(unique(ToothGrowth$dose))*
+                                 length(unique(ToothGrowth$supp)),"Paired")) + 
+  facet_grid(.~supp) + 
+  labs(x="Dose",y="Tooth Length",
+       title="Tooth Length vs Dose \n for Different Supplementary Delivery") + 
+  theme(plot.title = element_text(hjust = 0.5))
+g
+```
+
+```{r facet boxplots - dose}
+h <- ggplot(ToothGrowth,aes(x=supp,y=len)) + 
+  geom_boxplot(fill=brewer.pal(6,"Paired")) + 
+  facet_grid(.~dose) + 
+  labs(x="Supplementary Delivery",y="Tooth Length",
+       title="Tooth Length vs Supplementary Delivery \n for Different Dose") + 
+  theme(plot.title = element_text(hjust = 0.5))
+h
+```
+The 2 facet plots above show (1) sample averages of tooth length increased with dose for both OJ and VC
+supplementary deliveries, and (2) sample average of tooth length decreased with a change in supplementary
+delivery from OJ to VC for dose level 0.5 and 1. However, the sample average between the 2 deliveries did
+not differ much for dose level 2.
+These observations are only descriptions of the data. In order to make inferences about the relationship
+between tooth length and the 2 variables, hypothesis testing is required.
+
+## **3. Use confidence intervals and/or hypothesis tests to compare tooth growth by supp and dose. (Only use the techniques from class, even if there’s other approaches worth considering)**
+The following 3 code chunks conduct unpaired t-tests for each possible pair of dose levels.
+
+```{r Test Dose 0.5 vs 1}                                                   
+# Test Dose 0.5 vs 1
+dose_0.5_1 <- subset(ToothGrowth, dose %in% c(0.5,1))
+t.test(len~dose,data=dose_0.5_1)
+```
+
+```{r Test Dose 0.5 vs 2} 
+# Test Dose 0.5 vs 2
+dose_0.5_2 <- subset(ToothGrowth, dose %in% c(0.5,2))
+t.test(len~dose,data=dose_0.5_2)
+```
+
+```{r Test Dose 1 vs 2} 
+# Test Dose 1 vs 2
+dose_1_2 <- subset(ToothGrowth, dose %in% c(1,2))
+t.test(len~dose,data=dose_1_2)
+```
+
+```{r Test Supplementary Delivery} 
+# Test Supplementary Delivery
+t.test(len~supp,data=ToothGrowth)
+```
+For a 5% significance level, the difference in average between VC and OJ was not significant, since the p-value
+was greater than 5%. That is, the data implies that supplmentary delivery has no impact on tooth length.
+
+## **4. State your conclusions and the assumptions needed for your conclusions.**
+In conclusion, based on a 5% significance level, the data seems to indicate that tooth length increases
+with does level. In contrasts, there were no significant association observed between tooth length and
+supplementary delivery.
+These observations were based on the assumptions that: 1. The distribution of the sample means follows
+the CLT theorem, and can be approximated by the t-distribution, 2. The observations are not biased and
+are a true representation of the underlying population of tooth lengths.
+
+
