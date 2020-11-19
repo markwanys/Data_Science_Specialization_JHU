@@ -1,0 +1,78 @@
+---
+title: "quiz3"
+author: "Mark Wan"
+date: "11/19/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## **Question 1**
+```{r q1}
+library(AppliedPredictiveModeling)
+data(segmentationOriginal)
+library(caret)
+library(rattle)
+
+head(segmentationOriginal)
+training <- subset(segmentationOriginal,Case=="Train")
+testing <- subset(segmentationOriginal,Case=="Test")
+set.seed(125)
+ModelFit <- train(Class~.,method='rpart',data=segmentationOriginal)
+fancyRpartPlot(ModelFit$finalModel )
+print("PS, "PS, PS,Not possible to predict")
+```
+
+## **Question 2**
+```{r q2}
+library(pgmm)
+data(olive)
+olive = olive[,-1]
+newdata = as.data.frame(t(colMeans(olive)))
+ModelFit <- train(Area~., data=olive,method='rpart')
+predict(ModelFit, newdata=newdata)
+
+```
+
+## **Question 3**
+```{r q3}
+#download.file("https://web.stanford.edu/~hastie/ElemStatLearn/datasets/SAheart.data","SAheart.csv")
+SAheart <- read.csv("SAheart.csv")
+set.seed(8484)
+train = sample(1:dim(SAheart)[1],size=dim(SAheart)[1]/2,replace=F)
+trainSA = SAheart[train,]
+testSA = SAheart[-train,]
+missClass = function(values,prediction){sum(((prediction > 0.5)*1) != values)/length(values)}
+
+set.seed(13234)
+ModelFit <- train(chd~age+alcohol+obesity+tobacco+typea+ldl, method='glm',family='binomial',data=trainSA)
+missClass(testSA$chd,predict(ModelFit,newdata=testSA))
+missClass(trainSA$chd,predict(ModelFit,newdata=trainSA))
+```
+
+## **Question 5**
+```{r q5}
+#download.file("https://web.stanford.edu/~hastie/ElemStatLearn/datasets/vowel.test","vowel_test.csv")
+#download.file("https://web.stanford.edu/~hastie/ElemStatLearn/datasets/vowel.train","vowel_train.csv")
+set.seed(33833)
+train <- read.csv("vowel_train.csv")
+train$y <- as.factor(train$y)
+test <- read.csv("vowel_test.csv")
+test$y <- as.factor(test$y)
+
+ModelFit <- train(y~.,data=train,method='rf',prox=TRUE)
+varImp(ModelFit)
+```
+
+## **Question**
+```{r q}
+train$y <- as.factor(train$y)
+test$y <- as.factor(test$y)
+set.seed(33833)
+library(randomForest)
+
+modvowel <- randomForest(y ~ ., data = train)
+order(varImp(modvowel), decreasing = T)
+```
