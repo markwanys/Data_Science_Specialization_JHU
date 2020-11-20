@@ -1,0 +1,118 @@
+---
+title: "quiz4"
+author: "Mark Wan"
+date: "11/19/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(caret)
+library(gbm)
+```
+
+## **Question 1**
+```{r q1}
+vowel.train <- read.csv("vowel_train.csv")
+vowel.test <- read.csv("vowel_test.csv")
+
+vowel.train$y <- as.factor(vowel.train$y)
+vowel.test$y <- as.factor(vowel.test$y)
+set.seed(33833)
+
+model_rf <- train(y~.,data=vowel.train,method='rf')
+predict_rf <- predict(model_rf,vowel.test)
+confusionMatrix(vowel.test$y,predict_rf)$overall[1]
+
+model_gbm <- train(y~.,data=vowel.train,method='gbm',verbose=FALSE)
+predict_gbm <- predict(model_gbm,vowel.test)
+confusionMatrix(vowel.test$y,predict_gbm)$overall[1]
+
+confusionMatrix(predict_rf,predict_gbm)$overall[1]
+```
+
+## **Question 2**
+```{r q2}
+library(caret)
+library(gbm)
+set.seed(3433)
+library(AppliedPredictiveModeling)
+data(AlzheimerDisease)
+adData = data.frame(diagnosis,predictors)
+inTrain = createDataPartition(adData$diagnosis, p = 3/4)[[1]]
+training = adData[ inTrain,]
+testing = adData[-inTrain,]
+
+set.seed(62433)
+model_rf <- train(diagnosis~., data=training,method='rf')
+predict_rf <- predict(model_rf,testing)
+accuracy_rf <- confusionMatrix(testing$diagnosis,predict_rf)$overall[1]
+
+model_gbm <- train(diagnosis~., data=training,method='gbm',verbose=FALSE)
+predict_gbm <- predict(model_gbm,testing)
+accuracy_gbm <- confusionMatrix(testing$diagnosis,predict_gbm)$overall[1]
+
+model_lda <- train(diagnosis~., data=training,method='lda')
+predict_lda <- predict(model_lda,testing)
+accuracy_lda <- confusionMatrix(testing$diagnosis,predict_lda)$overall[1]
+
+predDF <- data.frame(predict_rf,predict_gbm,predict_lda,diagnosis=testing$diagnosis)
+model_comb <- train(diagnosis~.,data=predDF,method='rf')
+predict_comb <- predict(model_comb,predDF)
+accuracy_comb <- confusionMatrix(testing$diagnosis,predict_comb)$overall[1]
+
+data.frame(accuracy_rf,accuracy_gbm,accuracy_lda,accuracy_comb)
+```
+
+## **Question 3**
+```{r q3}
+set.seed(3523)
+library(AppliedPredictiveModeling)
+library(elasticnet)
+data(concrete)
+inTrain = createDataPartition(concrete$CompressiveStrength, p = 3/4)[[1]]
+training = concrete[ inTrain,]
+testing = concrete[-inTrain,]
+
+set.seed(233)
+model <- train(CompressiveStrength~.,data=concrete,method='lasso')
+predictors <- as.matrix(subset(testing,select=-c(CompressiveStrength)))
+enet_obj <- enet(predictors,testing$CompressiveStrength,lambda=0)
+plot(enet_obj,xvar="penalty")
+```
+
+## **Question 4**
+```{r q4}
+library(lubridate) # For year() function below
+library(forecast)
+#download.file("https://d396qusza40orc.cloudfront.net/predmachlearn/gaData.csv","gaData.csv")
+dat = read.csv("gaData.csv")
+training = dat[year(dat$date) < 2012,]
+testing = dat[(year(dat$date)) > 2011,]
+tstrain = ts(training$visitsTumblr)
+
+model <- bats (tstrain)
+plot(tstrain,xlab='time',ylab="visits")
+
+fcast <- forecast(model, h=nrow(testing))
+plot(fcast)
+
+table((testing$visitsTumblr>fcast$lower[,'95%']) & (testing$visitsTumblr<fcast$upper[,'95%']))[2]/length(testing$visitsTumblr)
+```
+
+## **Question 5**
+```{r q5}
+set.seed(3523)
+library(AppliedPredictiveModeling)
+data(concrete)
+inTrain = createDataPartition(concrete$CompressiveStrength, p = 3/4)[[1]]
+training = concrete[ inTrain,]
+testing = concrete[-inTrain,]
+
+library(e1071)
+set.seed(325)
+model <- svm(CompressiveStrength~.,data=training)
+predicted <- predict(model,testing)
+sqrt(mean((testing$CompressiveStrength - predicted)^2))
+accuracy(predicted,testing$CompressiveStrength)
+```
