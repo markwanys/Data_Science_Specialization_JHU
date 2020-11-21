@@ -12,6 +12,7 @@ library(corrplot)
 library(ggplot2)
 library(rattle)
 library(e1071)
+set.seed(56789)
 ```
 
 # **Introduction**
@@ -25,72 +26,87 @@ The following code chunk downloads raw data from the source links, then stores t
 ```{r load data}
 #download.file("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv","training.csv")
 #download.file("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv","testing.csv")
-training <- read.csv('training.csv')
-classe <- as.factor(training$classe)
-testing <- read.csv('testing.csv')
+training_raw <- read.csv('training.csv')
+testing_raw <- read.csv('testing.csv')
 ```
 
 ## **Clean Data**
 The following code chunk coerces relevant variables to time and factor variables. Note some of these variables will not be used in final machine algorithm. 
 ```{r clean data}
+training <- training_raw
 cols <- c('user_name','new_window','num_window','classe')
 training[cols] <- lapply(training[cols],as.factor)
 training$cvtd_timestamp <- ts(training$cvtd_timestamp)
 training <- subset(training, select=-c(classe))
 dim(training)
 
+testing <- testing_raw
 cols <- c('user_name','new_window','num_window')
 testing[cols] <- lapply(testing[cols],as.factor)
 testing$cvtd_timestamp <- ts(testing$cvtd_timestamp)
+```
+
+## **Data Partitition**
+```{r partition}
+inTrain <- createDataPartition(training$classe,p=0.7,list=FALSE)
+training_set <- training[inTrain,] 
+testing_set <- training[-inTrain,] 
 ```
 
 ## **Pre-processing**
 The following code removes columns with high proportion of NA values (threshold set at 90%). It then removes columns with near-zero variance as these variables do not provide a significant amount of information for classification.
 ```{r feature selection}
 NA_cols <- sapply(training,function(x)mean(is.na(x)))>0.90
-training2 <- training[,NA_cols==FALSE]
-dim(training2)
+training_set <- training_set[,NA_cols==FALSE]
+testing_set <- testing_set[,NA_cols==FALSE]
+testing <- testing[,NA_cols==FALSE]
+dim(training_set)
 
-training3 <- training2[,-nearZeroVar(training)]
-dim(training3)
+NZ_cols <- nearZeroVar(training_set)
+training_set <- training_set[,-NZ_cols]
+testing_set <- testing_set[,-NZ_cols]
+testing <- testing[,-NZ_cols]
+dim(training_set)
 ```
 
 Given that the objective is to classify exercise activities, most of the useful information would be contained in numeric variables. These variables will be the focus for the rest of the machine learning algorithm.
 ```{r only choose numeric variables}
-col_num <- character()
-for (name in names(training3)){
-  if (class(training3[,name])=='numeric') {
-    col_num <- append(col_num,name)
+num_col <- character()
+for (name in names(training_set)){
+  if (class(training_set[,name])=='numeric') {
+    num_col <- append(num_col,name)
   }
 }
 
-training4 <- training3[col_num]
-dim(training4)
+training_set <- training_set[num_col]
+dim(training_set)
 ```
 
 The correlation plot shows a small number of predictors are strongly correlated. These predictors will be separated into independent components using Principle Component Analysis. 
 ```{r corrplot, out.width = '40%'}
-cor(training4)
-corrplot(cor(training4), order = "FPC", method = "color", type = "lower", tl.cex = 0.8, tl.col = rgb(0, 0, 0))
+cor(training_set)
+corrplot(cor(training_set), order = "FPC", method = "color", type = "lower", tl.cex = 0.8, tl.col = rgb(0, 0, 0))
 ```
 
 ## **Principle Component Analysis**
 Threshold of 0.8 would be a reasonable criteria for PCA. A higher threshold may lead to more variance in the predictions, with only small gains in bais reduction.
 ```{r preprocess}
 library(RANN)
-preProc <- preProcess(training4,method='pca',thresh=0.8)
-training5 <- predict(preProc,training4)
-dim(training5)
-training6 <- cbind(training5,classe)
-training6$classe <- as.factor(training6$classe)
-testing2 <- predict(preProc,testing)
+preProc <- preProcess(subset(training_set,select=-c('classe')),method='pca',thresh=0.9)
+training_set_PC <- predict(preProc,subset(training_set,select=-c('classe')))
+training_set <- cbind(training_set_PC,training_set$classe)
+dim(training_set)
+
+testing_set_PC <- predict(preProc,subset(testing_set,select=-c('classe')))
+testing_set <- cbind(testing_set_PC,testing_set$classe)
+
+testing_PC <- predict(preProc,subset(testing,select=-c('classe')))
+testing <- cbind(testing_PC,testing$classe)
 ```
-
-
 
 The SVD variance graph below shows that most of the variance in predictors are explained by the first 2 principle components. Hence, using 7 PC's as indicated by the PCA above should give us a representative set of predictors for classification.
 ```{r PCA plot, out.width = '40%'}
-svd1 <- svd(training5)
+svd1 <- svd(training_set_PC)
 plot(svd1$d^2/sum(svd1$d^2), xlab = "Column", ylab = "Prop. of variance explained", pch = 19)
 ```
 
@@ -99,77 +115,88 @@ The following sections contain code chunks for different machine learning algori
 ## **Model Selection A - Decision Tree**
 ```{r dt}
 controlRF <- trainControl(method="cv", number=5, verboseIter=FALSE)
-modelFit_dt <- train(classe~.,method='rpart',data=training6,trControl=controlRF,preProcess=c('center','scale'))
+modelFit_dt <- train(classe~.,method='rpart',data=training_set,trControl=controlRF,preProcess=c('center','scale'))
 modelFit_dt$finalModel
 fancyRpartPlot(modelFit_dt$finalModel)
 ```
 
 ```{r confusion matrix dt}
-pred_dt <- predict(modelFit_dt,training6)
-confMat_dt <- confusionMatrix(classe,pred_dt)
+pred_dt <- predict(modelFit_dt,testing_set)
+confMat_dt <- confusionMatrix(testing_set$classe,pred_dt)
 accuracy_dt <- confMat_dt$overall[1]
-print(paste("Decision Tree accuracy = ",accuracy_dt))
+print(paste("Decision Tree OOB accuracy = ",accuracy_dt))
 plot(confMat_dt$table,main="Confusion Matrix Plot - Decision Tree")
 ```
 
 
 ## **Model Selection B - Random Forest**
 ```{r rf}
-modelFit_rf <- train(classe~.,method='rf',data=training6,trControl=controlRF,preProcess=c('center','scale'))
+modelFit_rf <- train(classe~.,method='rf',data=training_set,trControl=controlRF,preProcess=c('center','scale'))
 modelFit_rf$finalModel
 ```
 
 ```{r confusion matrix rf}
-pred_rf <- predict(modelFit_rf,training6)
-confMat_rf <- confusionMatrix(classe,pred_rf)
+pred_rf <- predict(modelFit_rf,testing_set)
+confMat_rf <- confusionMatrix(testing_set$classe,pred_rf)
 accuracy_rf <- confMat_rf$overall[1]
-print(paste("Random Forest accuracy = ",accuracy_rf))
+print(paste("Random Forest OOB accuracy = ",accuracy_rf))
 plot(confMat_rf$table,main="Confusion Matrix Plot - Random Forest")
 ```
 
 ## **Model Selection C - Generalized Boosting Model**
 ```{r gbm}
-modelFit_gbm <- train(classe~.,method='gbm',data=training6,trControl=controlRF,preProcess=c('center','scale'),verbose=FALSE)
+modelFit_gbm <- train(classe~.,method='gbm',data=training_set,trControl=controlRF,preProcess=c('center','scale'),verbose=FALSE)
 modelFit_gbm$finalModel
 ```
 
 ```{r confusion matrix gbm}
-pred_gbm <- predict(modelFit_gbm,training6)
-confMat_gbm <- confusionMatrix(classe,pred_gbm)
+pred_gbm <- predict(modelFit_gbm,testing_set)
+confMat_gbm <- confusionMatrix(testing_set$classe,pred_gbm)
 accuracy_gbm <- confMat_gbm$overall[1]
-print(paste("GBM accuracy = ",accuracy_gbm))
+print(paste("GBM OOB accuracy = ",accuracy_gbm))
 plot(confMat_gbm$table,main="Confusion Matrix Plot - GBM")
 ```
 
 
 ## **Model Selection D - Support Vector Machine**
 ```{r svm}
-training6_prestd <- subset(training6, select=-c(classe))
-preObj <- preProcess(training6_prestd,method=c("center","scale"))
-training6_std <- cbind(predict(preObj,training6_prestd),training6$classe)
-names(training6_std)[which(names(training6_std)=='training6$classe')] <- 'classe'
-modelFit_svm <- svm(classe~.,data=training6_std,cross=5)
+training_set_prestd <- subset(training_set, select=-c(classe))
+preObj <- preProcess(training_set_prestd,method=c("center","scale"))
+training_set_std <- cbind(predict(preObj,training_set_prestd),training_set$classe)
+names(training_set_std)[which(names(training_set_std)=='training_set$classe')] <- 'classe'
+
+testing_set_prestd <- subset(testing_set, select=-c(classe))
+preObj <- preProcess(testing_set_prestd,method=c("center","scale"))
+testing_set_std <- cbind(predict(preObj,testing_set_prestd),testing_set$classe)
+names(testing_set_std)[which(names(testing_set_std)=='testing_set$classe')] <- 'classe'
+
+testing_prestd <- subset(testing, select=-c(classe))
+preObj <- preProcess(testing_prestd,method=c("center","scale"))
+testing_std <- cbind(predict(preObj,testing_prestd),testing$classe)
+names(testing_std)[which(names(testing_std)=='testing$classe')] <- 'classe'
+
+modelFit_svm <- svm(classe~.,data=training_set_std,cross=5)
 ```
 
 ```{r confusion matrix svm}
-pred_svm <- predict(modelFit_svm,training6_std)
-confMat_svm <- confusionMatrix(classe,pred_svm)
+pred_svm <- predict(modelFit_svm,testing_set_std)
+confMat_svm <- confusionMatrix(testing_set_std$classe,pred_svm)
 accuracy_svm <- confMat_svm$overall[1]
 print(paste("svm accuracy = ",accuracy_svm))
 plot(confMat_svm$table,main="Confusion Matrix Plot - svm")
 ```
 ## **Model Selection E - Combined**
 ```{r combined}
-predDf <- data.frame(pred_dt,pred_rf,pred_gbm,pred_svm,classe=training6$classe)
+predDf <- data.frame(pred_dt,pred_rf,pred_gbm,pred_svm,classe=testing_set$classe)
 modelFit_comb <- train(classe~.,data=predDf,method='gam')
 ```
 
 ```{r confusion matrix combined}
 pred_comb <- predict(modelFit_comb,predDf)
-confMat_comb <- confusionMatrix(classe,pred_comb)
+confMat_comb <- confusionMatrix(predDf$classe,pred_comb)
 accuracy_comb <- confMat_comb$overall[1]
-print(paste("comb accuracy = ",accuracy_comb))
-plot(confMat_comb$table,main="Confusion Matrix Plot - comb")
+print(paste("Combined OOB accuracy = ",accuracy_comb))
+plot(confMat_comb$table,main="Confusion Matrix Plot - Combined")
 ```
 
 
@@ -193,7 +220,7 @@ Combined| `r accuracy_comb`
 The most accurate in-sample model was used for testing. This approach is not ideal given that the most accurate in-sample model may also be overfitted to the training set. 
 
 ```{r test}
-data.frame(case=c(1:dim(testing2)[1]),Prediction=predict(modelFit_rf,testing2))
+data.frame(case=c(1:dim(testing)[1]),Prediction=predict(modelFit_rf,testing))
 ```
 
 
