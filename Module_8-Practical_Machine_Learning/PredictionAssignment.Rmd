@@ -19,6 +19,12 @@ set.seed(56789)
 ***
 The goal of this study is to apply machine learning techniques to predict exercise types based on activity data.
 
+The data for this project come from this source: http://web.archive.org/web/20161224072740/http:/groupware.les.inf.puc-rio.br/har.
+
+Reference for dataset and literature:
+Ugulino, W.; Cardador, D.; Vega, K.; Velloso, E.; Milidiu, R.; Fuks, H. Wearable Computing: Accelerometers' Data Classification of Body Postures and Movements. Proceedings of 21st Brazilian Symposium on Artificial Intelligence. Advances in Artificial Intelligence - SBIA 2012. In: Lecture Notes in Computer Science. , pp. 52-61. Curitiba, PR: Springer Berlin / Heidelberg, 2012. ISBN 978-3-642-34458-9. DOI: 10.1007/978-3-642-34459-6_6.
+
+
 # **Analysis**
 ***
 ## **Load Data**
@@ -37,7 +43,6 @@ training <- training_raw
 cols <- c('user_name','new_window','num_window','classe')
 training[cols] <- lapply(training[cols],as.factor)
 training$cvtd_timestamp <- ts(training$cvtd_timestamp)
-training <- subset(training, select=-c(classe))
 dim(training)
 
 testing <- testing_raw
@@ -73,35 +78,38 @@ Given that the objective is to classify exercise activities, most of the useful 
 ```{r only choose numeric variables}
 num_col <- character()
 for (name in names(training_set)){
-  if (class(training_set[,name])=='numeric') {
+  if ((class(training_set[,name])=='numeric')|(name=='classe')) {
     num_col <- append(num_col,name)
   }
 }
 
 training_set <- training_set[num_col]
+testing_set <- testing_set[num_col]
+testing <- testing[num_col[!num_col %in% "classe"]]
 dim(training_set)
 ```
 
 The correlation plot shows a small number of predictors are strongly correlated. These predictors will be separated into independent components using Principle Component Analysis. 
 ```{r corrplot, out.width = '40%'}
-cor(training_set)
-corrplot(cor(training_set), order = "FPC", method = "color", type = "lower", tl.cex = 0.8, tl.col = rgb(0, 0, 0))
+corrs <- cor(subset(training_set,select=-c(classe)))
+corrplot(corrs, order = "FPC", method = "color", type = "lower", tl.cex = 0.8, tl.col = rgb(0, 0, 0))
 ```
 
 ## **Principle Component Analysis**
 Threshold of 0.8 would be a reasonable criteria for PCA. A higher threshold may lead to more variance in the predictions, with only small gains in bais reduction.
 ```{r preprocess}
 library(RANN)
-preProc <- preProcess(subset(training_set,select=-c('classe')),method='pca',thresh=0.9)
-training_set_PC <- predict(preProc,subset(training_set,select=-c('classe')))
+preProc <- preProcess(subset(training_set,select=-c(classe)),method='pca',thresh=0.9)
+training_set_PC <- predict(preProc,subset(training_set,select=-c(classe)))
 training_set <- cbind(training_set_PC,training_set$classe)
+names(training_set)[which(names(training_set)=='training_set$classe')] <- 'classe'
 dim(training_set)
 
-testing_set_PC <- predict(preProc,subset(testing_set,select=-c('classe')))
+testing_set_PC <- predict(preProc,subset(testing_set,select=-c(classe)))
 testing_set <- cbind(testing_set_PC,testing_set$classe)
+names(testing_set)[which(names(testing_set)=='testing_set$classe')] <- 'classe'
 
-testing_PC <- predict(preProc,subset(testing,select=-c('classe')))
-testing <- cbind(testing_PC,testing$classe)
+testing_PC <- predict(preProc,testing)
 ```
 
 The SVD variance graph below shows that most of the variance in predictors are explained by the first 2 principle components. Hence, using 7 PC's as indicated by the PCA above should give us a representative set of predictors for classification.
@@ -170,10 +178,8 @@ preObj <- preProcess(testing_set_prestd,method=c("center","scale"))
 testing_set_std <- cbind(predict(preObj,testing_set_prestd),testing_set$classe)
 names(testing_set_std)[which(names(testing_set_std)=='testing_set$classe')] <- 'classe'
 
-testing_prestd <- subset(testing, select=-c(classe))
-preObj <- preProcess(testing_prestd,method=c("center","scale"))
-testing_std <- cbind(predict(preObj,testing_prestd),testing$classe)
-names(testing_std)[which(names(testing_std)=='testing$classe')] <- 'classe'
+preObj <- preProcess(testing,method=c("center","scale"))
+testing_std <- predict(preObj,testing)
 
 modelFit_svm <- svm(classe~.,data=training_set_std,cross=5)
 ```
@@ -185,6 +191,7 @@ accuracy_svm <- confMat_svm$overall[1]
 print(paste("svm accuracy = ",accuracy_svm))
 plot(confMat_svm$table,main="Confusion Matrix Plot - svm")
 ```
+
 ## **Model Selection E - Combined**
 ```{r combined}
 predDf <- data.frame(pred_dt,pred_rf,pred_gbm,pred_svm,classe=testing_set$classe)
@@ -206,7 +213,7 @@ The table below presents summary of accuracy values for all classfiers explored.
 
 The estimated out-of-sample accuracies will be greater than each of the respective in-sample accuracies. This discrepancy can be explained by samplig variance.
 
-Classifier    |Accuracy (in-sample)
+Classifier    |Accuracy (Out-of-Sample estimate)
 -------------|---------
 Decision Tree| `r accuracy_dt`
 Random Forest| `r accuracy_rf`
@@ -215,12 +222,12 @@ SVM| `r accuracy_svm`
 Combined| `r accuracy_comb`
 
 
-## **Test**
+## **Evaluation**
 ***
 The most accurate in-sample model was used for testing. This approach is not ideal given that the most accurate in-sample model may also be overfitted to the training set. 
 
 ```{r test}
-data.frame(case=c(1:dim(testing)[1]),Prediction=predict(modelFit_rf,testing))
+data.frame(case=c(1:dim(testing)[1]),Prediction=predict(modelFit_rf,testing_PC))
 ```
 
 
