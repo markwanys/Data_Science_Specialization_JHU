@@ -1,47 +1,48 @@
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE,eval=TRUE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE,eval=TRUE,warning=FALSE)
 library(dplyr)
 library(leaflet)
 library(maps)
+library(CoordinateCleaner)
 ```
 
 ```{r load data}
 covid <- read.csv('owid-covid-data.csv', stringsAsFactors = FALSE,sep=',')
-data(world.cities)
+data(countryref)
 ```
 
-```{r clean data}
-world.cities <- world.cities %>%
-  filter(capital==1) %>%
-  select(country=country.etc,lat,lng=long)
+```{r clean country data}
+countryref <- countryref %>%
+  filter(!is.na(iso3)) %>%
+  select(code=iso3,country=name,lat=centroid.lat,lng=centroid.lon) %>%
+  group_by(code) %>%
+  summarise(code=first(code), country=first(country),lat=first(lat),lng=first(lng))
 ```
 
 ```{r clean covid data}
 covid$date <- as.Date(covid$date,format="%Y-%m-%d")
-covid$total_cases <- as.numeric(covid$total_cases)
+covid$total_cases_per_million <- as.numeric(covid$total_cases_per_million)
 covid <- covid %>%
-  filter(!is.na(total_cases)) %>%
+  filter(!is.na(total_cases_per_million)) %>%
   filter(location!=c('International','World')) %>%
-  mutate(location=replace(location,location=="United States","USA")) %>%
-  mutate(location=replace(location,location=="United Kingdom","UK")) %>%
-  select(country=location,date,total_cases) %>%
-  group_by(country) %>%
+  select(code=iso_code,country=location,date,total_cases_per_million) %>%
+  group_by(code) %>%
   arrange(desc(date)) %>%
-  summarise(total_cases=first(total_cases),Date=first(date)) %>%
-  inner_join(world.cities,by="country")
+  summarise(code=first(code),total_cases_per_million=first(total_cases_per_million),Date=first(date)) %>%
+  inner_join(countryref,by="code")
 ```
 
-## **Global Active COVID Cases as of `r Sys.Date()`**
+## **Cumulative Total COVID Cases per Million \n as of `r Sys.Date()`**
 ```{r leaflet plot,eval=TRUE}
 labs <- lapply(seq(nrow(covid)), function(i) {
   paste0( '<p><b>', covid[i, "country"], '</b></p><p>', 
-          prettyNum(covid[i, "total_cases"],big.mark = ","), '</p> ') 
+          prettyNum(covid[i, "total_cases_per_million"],big.mark = ","), '</p> ') 
 })
 
 as.data.frame(covid) %>%
   leaflet() %>%
   addTiles() %>%
-  addCircles(weight=1,radius=covid$total_cases/10,color='red',label=lapply(labs, htmltools::HTML))
+  addCircles(weight=1,radius=covid$total_cases_per_million*5,color='red',label=lapply(labs, htmltools::HTML))
 ```
 
 
