@@ -1,0 +1,49 @@
+---
+title: "COVID Infections"
+author: "Mark Wan"
+date: "11/23/2020"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE,eval=TRUE,warning=FALSE)
+library(dplyr)
+library(lubridate)
+library(plotly)
+library(leaflet)
+library(maps)
+library(CoordinateCleaner)
+```
+
+```{r load data}
+covid <- read.csv('owid-covid-data.csv', stringsAsFactors = FALSE,sep=',')
+```
+
+## **Total COVID Cases per Continent**
+```{r clean covid data}
+covid$date <- as.Date(covid$date,format="%Y-%m-%d")
+covid$month_year <- format(covid$date, "%Y-%m")
+covid$continent <- as.factor(covid$continent)
+covid$total_cases_per_million <- as.numeric(covid$total_cases_per_million)
+covid <- covid %>%
+  filter(!is.na(total_cases_per_million)) %>%
+  filter(!is.na(continent)) %>%
+  filter(continent!="") %>%
+  filter(location!=c('International','World')) %>%
+  select(continent,date,month_year,total_cases_per_million) %>%
+  group_by(continent,date) %>%
+  summarise(continent=first(continent),date=first(date),total_cases_per_million=sum(total_cases_per_million))
+  
+plot_ly(covid, x=~date, y=~total_cases_per_million,type='scatter',mode='lines',split=~continent) %>%
+  layout(title="Total Cumulative COVID Cases per Continent",
+          xaxis=list(title="Time"),
+          yaxis=list(title="Total Cumulative Cases per Million")
+  )
+```
+
+## **Thank You!**
+
+
+
+
+
