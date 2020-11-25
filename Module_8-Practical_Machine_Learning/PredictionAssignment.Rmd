@@ -51,7 +51,7 @@ testing[cols] <- lapply(testing[cols],as.factor)
 testing$cvtd_timestamp <- ts(testing$cvtd_timestamp)
 ```
 
-## **Data Partitition**
+## **Data Partition**
 ```{r partition}
 inTrain <- createDataPartition(training$classe,p=0.7,list=FALSE)
 training_set <- training[inTrain,] 

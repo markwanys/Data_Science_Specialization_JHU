@@ -1,0 +1,41 @@
+---
+title: "COVID Data Exploration - Pitch"
+author: "Mark Wan"
+date: "11/25/2020"
+output: ioslides_presentation
+runime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE,eval=TRUE,warning=FALSE)
+```
+```{r source, include=FALSE}
+source('global.R')
+source('ui.R')
+source('server.R')
+```
+
+## Executive Summary
+Given the rise of COVID globally, it is of great importance for the international community to assess the impact of the spread on wealthy vs poor nations. The insights gained from this analysis can potentially be used to identify vulnerable nations, or used to prioritize the distribution of a vaccine, once developed, to hotpots.
+
+The purpose of this shiny app is to primarily compare the impact of COVID on wealthy vs poor nations, and to allow users to perform quick exploration of the owid-covid-data dataset. The dataset was downloaded from the following website:
+https://covid.ourworldindata.org/data/owid-covid-data.csv
+
+The app allows the user to choose a selection of wealthy and poor nations ranked by GDP per capita. The user is also allowed to select dependent and independent variables from a picklist of numeric columns available in the dataset.
+
+Please refer to the following link for more details:
+https://ourworldindata.org/coronavirus-source-data
+
+## ui.R
+```{r ui, code = readLines("ui.R"), echo=TRUE, eval=FALSE}
+```
+
+## server.R
+```{r server, code = readLines("server.R"), echo=TRUE, eval=FALSE}
+```
+
+## Final Product
+```{r app}
+knitr::include_app("https://markwanys.shinyapps.io/COVID_Data_Exploration/?_ga=2.126618701.1383027475.1606238516-1313685368.1606238516",height="600px")
+```
+

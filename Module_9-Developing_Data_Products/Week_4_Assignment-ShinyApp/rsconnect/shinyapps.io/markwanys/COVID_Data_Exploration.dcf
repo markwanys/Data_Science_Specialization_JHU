@@ -1,0 +1,12 @@
+name: COVID_Data_Exploration
+title: COVID_Data_Exploration
+username:
+account: markwanys
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3295815
+bundleId: 3900781
+url: https://markwanys.shinyapps.io/COVID_Data_Exploration/
+when: 1606240934.51736
+asMultiple: FALSE
+asStatic: FALSE
